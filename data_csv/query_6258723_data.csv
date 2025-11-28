@@ -1,0 +1,110 @@
+query_id,data,last_updated,status
+6258723,"cohort week,game_project,new users,% retention 1 week later,% retention 2 weeks later,% retention 3 weeks later,% retention 4 weeks later,% retention 5 weeks later,% retention 6 weeks later,% retention 7 weeks later,% retention 8 weeks later
+2025-09-29 00:00:00.000 UTC,Aurory,222,32.43,27.93,22.52,24.32,27.03,22.97,26.13,11.71
+2025-10-06 00:00:00.000 UTC,Aurory,163,15.34,12.27,9.82,11.66,12.27,9.82,5.52,<nil>
+2025-10-13 00:00:00.000 UTC,Aurory,104,12.5,5.77,9.62,10.58,12.5,8.65,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,Aurory,97,12.37,11.34,12.37,9.28,3.09,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,Aurory,100,16,13,12,5,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,Aurory,98,10.2,9.18,8.16,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,Aurory,109,15.6,4.59,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,Aurory,94,9.57,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,Aurory,38,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,Axie Rescue,9,77.78,22.22,22.22,33.33,22.22,33.33,22.22,22.22
+2025-10-06 00:00:00.000 UTC,Axie Rescue,154,12.34,12.99,15.58,14.29,9.09,0.65,<nil>,<nil>
+2025-10-13 00:00:00.000 UTC,Axie Rescue,9,44.44,11.11,11.11,11.11,11.11,11.11,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,Axie Rescue,9,33.33,44.44,22.22,22.22,11.11,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,Axie Rescue,6,33.33,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,Axie Rescue,10,10,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,Axie Rescue,3,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,Axie Rescue,1,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,Faraway,63,19.05,11.11,15.87,1.59,9.52,6.35,<nil>,<nil>
+2025-10-06 00:00:00.000 UTC,Faraway,42,11.9,2.38,9.52,2.38,7.14,<nil>,<nil>,<nil>
+2025-10-13 00:00:00.000 UTC,Faraway,18,16.67,5.56,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,Faraway,38,5.26,2.63,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,Faraway,22,4.55,9.09,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,Faraway,10,20,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,Faraway,13,7.69,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,Faraway,14,7.14,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,Faraway,4,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,Genopets,300,44,39,36.67,34.33,32.67,32.33,30.33,29.67
+2025-10-06 00:00:00.000 UTC,Genopets,137,16.06,13.14,15.33,12.41,12.41,15.33,10.95,<nil>
+2025-10-13 00:00:00.000 UTC,Genopets,67,11.94,7.46,5.97,10.45,7.46,1.49,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,Genopets,65,10.77,9.23,4.62,4.62,7.69,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,Genopets,67,8.96,5.97,4.48,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,Genopets,109,8.26,5.5,6.42,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,Genopets,136,7.35,1.47,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,Genopets,71,7.04,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,Genopets,77,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,Honeyland,686,43.15,48.54,36.3,38.19,39.8,41.98,32.51,23.18
+2025-10-06 00:00:00.000 UTC,Honeyland,321,24.92,17.45,19,19.31,19,17.45,11.21,<nil>
+2025-10-13 00:00:00.000 UTC,Honeyland,258,16.28,10.08,13.95,11.24,7.75,7.75,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,Honeyland,198,19.19,8.59,12.12,9.6,5.56,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,Honeyland,145,15.86,12.41,5.52,6.9,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,Honeyland,148,13.51,4.73,4.05,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,Honeyland,149,14.09,6.71,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,Honeyland,149,7.38,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,Honeyland,66,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,MixMob,89,15.73,15.73,11.24,11.24,12.36,8.99,6.74,3.37
+2025-10-06 00:00:00.000 UTC,MixMob,105,8.57,7.62,12.38,6.67,7.62,5.71,2.86,<nil>
+2025-10-13 00:00:00.000 UTC,MixMob,69,18.84,11.59,17.39,4.35,17.39,<nil>,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,MixMob,44,13.64,13.64,2.27,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,MixMob,67,10.45,5.97,4.48,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,MixMob,41,12.2,4.88,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,MixMob,35,8.57,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,MixMob,26,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,MixMob,11,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,Nyan Heroes,59,33.9,16.95,20.34,22.03,15.25,13.56,10.17,6.78
+2025-10-06 00:00:00.000 UTC,Nyan Heroes,42,9.52,16.67,11.9,11.9,11.9,7.14,2.38,<nil>
+2025-10-13 00:00:00.000 UTC,Nyan Heroes,45,4.44,2.22,2.22,2.22,4.44,2.22,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,Nyan Heroes,34,2.94,2.94,5.88,8.82,2.94,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,Nyan Heroes,34,2.94,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,Nyan Heroes,20,10,15,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,Nyan Heroes,23,8.7,4.35,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,Nyan Heroes,26,3.85,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,Nyan Heroes,19,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,Portals,2161,35.08,29.52,8.1,7.59,6.62,5.78,6.06,3.47
+2025-10-06 00:00:00.000 UTC,Portals,1129,16.39,3.99,4.61,3.01,2.48,2.57,1.51,<nil>
+2025-10-13 00:00:00.000 UTC,Portals,1120,4.73,4.91,3.57,2.32,3.21,1.52,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,Portals,254,19.29,12.2,9.84,7.87,5.51,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,Portals,240,15.42,8.75,10.42,2.92,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,Portals,415,5.06,4.34,2.17,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,Portals,208,11.06,1.44,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,Portals,236,8.05,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,Portals,23,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,Portals Chrono Rush,149,38.26,33.56,27.52,33.56,29.53,26.17,26.85,15.44
+2025-10-06 00:00:00.000 UTC,Portals Chrono Rush,38,28.95,18.42,28.95,18.42,13.16,13.16,7.89,<nil>
+2025-10-13 00:00:00.000 UTC,Portals Chrono Rush,59,27.12,33.9,25.42,32.2,28.81,11.86,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,Portals Chrono Rush,58,18.97,8.62,8.62,5.17,3.45,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,Portals Chrono Rush,55,18.18,10.91,3.64,5.45,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,Portals Chrono Rush,32,15.63,6.25,6.25,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,Portals Chrono Rush,20,15,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,Portals Chrono Rush,36,13.89,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,Portals Chrono Rush,9,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,Star Atlas,2310,69.26,66.1,64.63,66.97,63.46,61.6,60.13,50.48
+2025-10-06 00:00:00.000 UTC,Star Atlas,633,28.59,27.33,32.07,28.44,24.01,23.22,15.01,<nil>
+2025-10-13 00:00:00.000 UTC,Star Atlas,395,22.28,20.25,20.25,19.49,16.71,11.39,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,Star Atlas,350,15.43,13.71,10.57,8.57,7.71,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,Star Atlas,1020,11.96,8.04,6.47,3.63,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,Star Atlas,503,14.12,13.12,7.95,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,Star Atlas,289,16.26,8.3,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,Star Atlas,240,11.25,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,Star Atlas,103,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,StepN,13153,26.74,26.13,24.33,29.64,31.89,23.07,20.98,16.44
+2025-10-06 00:00:00.000 UTC,StepN,7433,16.36,17.49,17.84,22.18,16.63,16.22,10.24,<nil>
+2025-10-13 00:00:00.000 UTC,StepN,4763,12.14,12.28,15.24,12.93,12.83,7.68,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,StepN,3760,11.25,11.25,9.84,10.82,7.21,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,StepN,3201,11.34,9.68,7.5,6.44,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,StepN,3484,9.76,7.35,4.56,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,StepN,2482,8.74,5.32,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,StepN,2045,6.31,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,StepN,1107,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-09-29 00:00:00.000 UTC,ev.io,10,10,10,10,10,<nil>,<nil>,<nil>,<nil>
+2025-10-06 00:00:00.000 UTC,ev.io,6,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-10-13 00:00:00.000 UTC,ev.io,12,8.33,8.33,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-10-20 00:00:00.000 UTC,ev.io,4,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-10-27 00:00:00.000 UTC,ev.io,9,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-03 00:00:00.000 UTC,ev.io,5,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-10 00:00:00.000 UTC,ev.io,9,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-17 00:00:00.000 UTC,ev.io,7,14.29,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+2025-11-24 00:00:00.000 UTC,ev.io,4,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>,<nil>
+",2025-11-28T01:33:59.961475,success

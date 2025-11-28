@@ -1,0 +1,15 @@
+query_id,data,last_updated,status
+6259161,"game,high retention users (50%+),very high retention users (70%+),excellent retention users (90%+),avg retention rate %,avg weeks active
+StepN,2471,1344,600,75.19,6.2
+Star Atlas,2202,2074,1772,95.27,8.7
+Honeyland,206,160,92,84.84,7.2
+Portals,153,123,91,88.72,7.4
+Genopets,120,113,92,94.63,8.5
+Aurory,57,45,26,85.11,6.8
+Portals Chrono Rush,50,43,31,90.02,7.9
+Nyan Heroes,12,12,10,97.32,8.1
+MixMob,7,4,3,79.56,7.3
+Axie Rescue,4,3,3,88.89,6.8
+ev.io,1,1,1,100,10
+Faraway,0,0,0,<nil>,<nil>
+",2025-11-28T01:34:07.753539,success
