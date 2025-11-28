@@ -36,10 +36,24 @@ from sklearn.model_selection import train_test_split
 
 def clean_dataframe_for_json(df: pd.DataFrame) -> pd.DataFrame:
     """
-    Replace NaN, Infinity, and -Infinity with None for JSON serialization
+    Comprehensive cleaning for JSON serialization:
+    - Replace NaN, Infinity, -Infinity with None
+    - Convert datetime columns to ISO strings
+    - Handle nested structures
     """
+    if df.empty:
+        return df
+    
     df = df.replace([np.inf, -np.inf], None)
     df = df.where(pd.notna(df), None)
+    
+    for col in df.columns:
+        if pd.api.types.is_datetime64_any_dtype(df[col]):
+            df[col] = df[col].astype(str)
+        elif df[col].dtype == 'object':
+            
+            df[col] = df[col].apply(lambda x: str(x) if pd.notna(x) and not isinstance(x, (str, int, float, bool, type(None))) else x)
+    
     return df
 
 try:
