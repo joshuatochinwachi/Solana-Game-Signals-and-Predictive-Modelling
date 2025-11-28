@@ -1,2 +1,4 @@
 *.env
 venv/
+__pycache__/
+raw_data_cache/

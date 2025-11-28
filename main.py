@@ -34,6 +34,14 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score, accuracy_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
 
+def clean_dataframe_for_json(df: pd.DataFrame) -> pd.DataFrame:
+    """
+    Replace NaN, Infinity, and -Infinity with None for JSON serialization
+    """
+    df = df.replace([np.inf, -np.inf], None)
+    df = df.where(pd.notna(df), None)
+    return df
+
 try:
     from xgboost import XGBClassifier
     XGBOOST_AVAILABLE = True
@@ -647,6 +655,7 @@ async def root():
 @app.get("/api/analytics/gamer-activation")
 async def get_gamer_activation():
     df = await cache_manager.fetch_dune_raw('gamer_activation')
+    df = clean_dataframe_for_json(df)
     metadata = cache_manager.get_metadata_for_key(
         'gamer_activation',
         'Dune Analytics',
@@ -657,6 +666,7 @@ async def get_gamer_activation():
 @app.get("/api/analytics/gamer-retention")
 async def get_gamer_retention():
     df = await cache_manager.fetch_dune_raw('gamer_retention')
+    df = clean_dataframe_for_json(df)  
     metadata = cache_manager.get_metadata_for_key(
         'gamer_retention',
         'Dune Analytics',
@@ -667,6 +677,7 @@ async def get_gamer_retention():
 @app.get("/api/analytics/gamer-reactivation")
 async def get_gamer_reactivation():
     df = await cache_manager.fetch_dune_raw('gamer_reactivation')
+    df = clean_dataframe_for_json(df)  
     metadata = cache_manager.get_metadata_for_key(
         'gamer_reactivation',
         'Dune Analytics',
@@ -677,6 +688,7 @@ async def get_gamer_reactivation():
 @app.get("/api/analytics/gamer-deactivation")
 async def get_gamer_deactivation():
     df = await cache_manager.fetch_dune_raw('gamer_deactivation')
+    df = clean_dataframe_for_json(df)  
     metadata = cache_manager.get_metadata_for_key(
         'gamer_deactivation',
         'Dune Analytics',
@@ -687,6 +699,7 @@ async def get_gamer_deactivation():
 @app.get("/api/analytics/high-retention-users")
 async def get_high_retention_users():
     df = await cache_manager.fetch_dune_raw('high_retention_users')
+    df = clean_dataframe_for_json(df)  
     metadata = cache_manager.get_metadata_for_key(
         'high_retention_users',
         'Dune Analytics',
@@ -697,6 +710,7 @@ async def get_high_retention_users():
 @app.get("/api/analytics/high-retention-summary")
 async def get_high_retention_summary():
     df = await cache_manager.fetch_dune_raw('high_retention_summary')
+    df = clean_dataframe_for_json(df)  
     metadata = cache_manager.get_metadata_for_key(
         'high_retention_summary',
         'Dune Analytics',
@@ -707,6 +721,7 @@ async def get_high_retention_summary():
 @app.get("/api/analytics/gamers-by-games-played")
 async def get_gamers_by_games_played():
     df = await cache_manager.fetch_dune_raw('gamers_by_games_played')
+    df = clean_dataframe_for_json(df)  
     metadata = cache_manager.get_metadata_for_key(
         'gamers_by_games_played',
         'Dune Analytics',
@@ -717,6 +732,7 @@ async def get_gamers_by_games_played():
 @app.get("/api/analytics/cross-game-gamers")
 async def get_cross_game_gamers():
     df = await cache_manager.fetch_dune_raw('cross_game_gamers')
+    df = clean_dataframe_for_json(df)  
     metadata = cache_manager.get_metadata_for_key(
         'cross_game_gamers',
         'Dune Analytics',
@@ -727,6 +743,7 @@ async def get_cross_game_gamers():
 @app.get("/api/analytics/gaming-activity-total")
 async def get_gaming_activity_total():
     df = await cache_manager.fetch_dune_raw('gaming_activity_total')
+    df = clean_dataframe_for_json(df)  
     metadata = cache_manager.get_metadata_for_key(
         'gaming_activity_total',
         'Dune Analytics',
@@ -737,6 +754,7 @@ async def get_gaming_activity_total():
 @app.get("/api/analytics/daily-gaming-activity")
 async def get_daily_gaming_activity():
     df = await cache_manager.fetch_dune_raw('daily_gaming_activity')
+    df = clean_dataframe_for_json(df)  
     metadata = cache_manager.get_metadata_for_key(
         'daily_gaming_activity',
         'Dune Analytics',
@@ -747,7 +765,7 @@ async def get_daily_gaming_activity():
 # ==================== ML PREDICTION ENDPOINTS ====================
 
 @app.get("/api/ml/predictions/churn")
-async def predict_churn(method: str = Query(default="ensemble", regex="^(champion|ensemble)$")):
+async def predict_churn(method: str = Query(default="ensemble", pattern="^(champion|ensemble)$")):
     """
     Get churn predictions for all users
     Parameters:
@@ -801,7 +819,7 @@ async def predict_churn(method: str = Query(default="ensemble", regex="^(champio
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/ml/predictions/churn/by-game")
-async def predict_churn_by_game(method: str = Query(default="ensemble", regex="^(champion|ensemble)$")):
+async def predict_churn_by_game(method: str = Query(default="ensemble", pattern="^(champion|ensemble)$")):
     """Get churn predictions aggregated by game"""
     try:
         if not ml_manager.champion:
