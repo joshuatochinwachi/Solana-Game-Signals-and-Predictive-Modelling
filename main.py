@@ -92,7 +92,8 @@ class Config:
             'gamers_by_games_played': int(os.getenv('QUERY_ID_GAMERS_BY_GAMES_PLAYED', 6255499)),
             'cross_game_gamers': int(os.getenv('QUERY_ID_CROSS_GAME_GAMERS', 6258915)),
             'gaming_activity_total': int(os.getenv('QUERY_ID_GAMING_ACTIVITY_TOTAL', 6251582)),
-            'daily_gaming_activity': int(os.getenv('QUERY_ID_DAILY_GAMING_ACTIVITY', 6255551))
+            'daily_gaming_activity': int(os.getenv('QUERY_ID_DAILY_GAMING_ACTIVITY', 6255551)),
+            'user_daily_activity': int(os.getenv('QUERY_ID_USER_DAILY_ACTIVITY', 6273417))
         }
         
         self.cache_duration = int(os.getenv('CACHE_DURATION', 86400))
@@ -1040,7 +1041,10 @@ async def force_refresh_and_train(request: Request):
         
         # Step 2: Prepare ML data
         logger.info("Step 2: Preparing ML training data...")
-        daily_activity = query_results.get('daily_gaming_activity')
+        daily_activity = query_results.get('user_daily_activity')
+        if daily_activity is None or daily_activity.empty:
+            logger.warning("No user_daily_activity found, trying daily_gaming_activity")
+            daily_activity = query_results.get('daily_gaming_activity')
         
         if daily_activity is None or daily_activity.empty:
             return {
@@ -1051,19 +1055,37 @@ async def force_refresh_and_train(request: Request):
             }
         
         # Clean data
-        daily_activity['activity_date'] = pd.to_datetime(
-            daily_activity.get('day', daily_activity.get('activity_date'))
-        )
-        
+        # Handle date column
+        if 'day' in daily_activity.columns:
+            daily_activity['activity_date'] = pd.to_datetime(daily_activity['day'])
+        elif 'activity_date' not in daily_activity.columns:
+            logger.error("No date column found in data")
+            return {
+                "status": "error",
+                "message": "No date column found in data. Expected 'day' or 'activity_date'."
+            }
+
+        # Handle user identifier column
         if 'user_wallet' not in daily_activity.columns:
             if 'gamer' in daily_activity.columns:
                 daily_activity['user_wallet'] = daily_activity['gamer']
             else:
-                logger.error("No user identifier column found")
+                logger.error(f"No user identifier column found. Available columns: {list(daily_activity.columns)}")
                 return {
                     "status": "error",
-                    "message": "No user identifier column found in data"
+                    "message": f"No user identifier column found. This query needs individual user data, not aggregated data. Available columns: {list(daily_activity.columns)}"
                 }
+
+        # Ensure we have the required columns
+        required_columns = ['activity_date', 'user_wallet', 'project']
+        missing_columns = [col for col in required_columns if col not in daily_activity.columns]
+
+        if missing_columns:
+            logger.error(f"Missing required columns: {missing_columns}")
+            return {
+                "status": "error",
+                "message": f"Missing required columns for ML training: {missing_columns}. Cannot train models without individual user-level data."
+            }
         
         daily_activity['user_wallet'] = daily_activity['user_wallet'].astype(str)
         daily_activity['project'] = daily_activity['project'].astype(str)
