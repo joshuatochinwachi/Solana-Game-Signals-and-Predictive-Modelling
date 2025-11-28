@@ -58,7 +58,7 @@ logger = logging.getLogger(__name__)
 
 class Config:
     def __init__(self):
-        self.dune_api_key = os.getenv("DUNE_API_KEY")
+        self.dune_api_key = os.getenv("DEFI_JOSH_DUNE_QUERY_API_KEY")
         
         self.dune_queries = {
             'gamer_activation': int(os.getenv('QUERY_ID_GAMER_ACTIVATION', 6255646)),
@@ -73,7 +73,7 @@ class Config:
             'daily_gaming_activity': int(os.getenv('QUERY_ID_DAILY_GAMING_ACTIVITY', 6255551))
         }
         
-        self.cache_duration = int(os.getenv('CACHE_DURATION', 21600))
+        self.cache_duration = int(os.getenv('CACHE_DURATION', 86400))
         self.min_training_samples = int(os.getenv('MIN_TRAINING_SAMPLES', 100))
         self.prediction_window_days = int(os.getenv('PREDICTION_WINDOW_DAYS', 14))
         self.api_secret = os.getenv('FASTAPI_SECRET', '')
