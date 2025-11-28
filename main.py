@@ -2,7 +2,7 @@
 Solana Games ML Analytics API
 Version: 1.0.0
 Features:
-- 10 Dune Analytics endpoints (cached data)
+- 11 Dune Analytics endpoints (cached data)
 - Multi-model ML ensemble with auto-selection
 - Automated retraining on data refresh
 - GitHub Actions integration
@@ -640,7 +640,8 @@ async def root():
                 "gamers_by_games_played": "/api/analytics/gamers-by-games-played",
                 "cross_game_gamers": "/api/analytics/cross-game-gamers",
                 "gaming_activity_total": "/api/analytics/gaming-activity-total",
-                "daily_gaming_activity": "/api/analytics/daily-gaming-activity"
+                "daily_gaming_activity": "/api/analytics/daily-gaming-activity",
+                "user_daily_activity": "/api/analytics/user-daily-activity"
             },
             "ml_predictions": {
                 "churn_predictions": "/api/ml/predictions/churn",
@@ -659,7 +660,7 @@ async def root():
                 "health": "/api/health"
             }
         },
-        "total_analytics_sources": 10,
+        "total_analytics_sources": 11,
         "ml_models_available": len(ml_manager.model_configs),
         "champion_model": ml_manager.champion['name'] if ml_manager.champion else "Not trained yet",
         "cache_duration_hours": config.cache_duration / 3600
@@ -774,6 +775,17 @@ async def get_daily_gaming_activity():
         'daily_gaming_activity',
         'Dune Analytics',
         config.dune_queries['daily_gaming_activity']
+    )
+    return {"metadata": metadata.dict(), "data": df.to_dict('records')}
+
+@app.get("/api/analytics/user-daily-activity")
+async def get_user_daily_activity():
+    df = await cache_manager.fetch_dune_raw('user_daily_activity')
+    df = clean_dataframe_for_json(df)  
+    metadata = cache_manager.get_metadata_for_key(
+        'user_daily_activity',
+        'Dune Analytics',
+        config.dune_queries['user_daily_activity']
     )
     return {"metadata": metadata.dict(), "data": df.to_dict('records')}
 
@@ -1191,7 +1203,8 @@ async def get_all_analytics():
             'gamers_by_games_played': get_gamers_by_games_played,
             'cross_game_gamers': get_cross_game_gamers,
             'gaming_activity_total': get_gaming_activity_total,
-            'daily_gaming_activity': get_daily_gaming_activity
+            'daily_gaming_activity': get_daily_gaming_activity,
+            'user_daily_activity': get_user_daily_activity
         }
         
         for query_key, endpoint_func in analytics_endpoints.items():
