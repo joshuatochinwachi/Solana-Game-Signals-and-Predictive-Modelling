@@ -352,8 +352,17 @@ class FeatureService:
                     if features['total_active_days'] > 0 else 0
                 )
                 
+                # FIX: Handle timezone-aware/naive datetime comparison
+                latest_activity = user_data['activity_date'].max()
+                if latest_activity.tzinfo is None:
+                    current_time = datetime.now()
+                else:
+                    from datetime import timezone
+                    current_time = datetime.now(timezone.utc).replace(tzinfo=None)
+                    latest_activity = latest_activity.replace(tzinfo=None)
+                
                 features['days_since_last_activity'] = (
-                    datetime.now() - user_data['activity_date'].max()
+                    current_time - latest_activity
                 ).days
                 
                 first_week = user_data.head(7)
