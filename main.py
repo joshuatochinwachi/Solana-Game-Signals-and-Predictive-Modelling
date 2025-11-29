@@ -56,6 +56,14 @@ def clean_dataframe_for_json(df: pd.DataFrame) -> pd.DataFrame:
     
     return df
 
+def safe_float(value: Any) -> Optional[float]:
+    """Convert float to JSON-safe value (None if NaN or Inf)"""
+    if isinstance(value, (int, float)):
+        if np.isnan(value) or np.isinf(value):
+            return None
+        return float(value)
+    return value
+
 try:
     from xgboost import XGBClassifier
     XGBOOST_AVAILABLE = True
@@ -258,23 +266,36 @@ class FeatureService:
             return None
         
         user_data = user_data.sort_values('activity_date')
+        
+        # Define cutoff date - we'll predict activity AFTER this date
         cutoff_date = user_data['activity_date'].max() - pd.Timedelta(days=(60 - lookback_days))
         
+        # Training period: data BEFORE cutoff
         training_period = user_data[user_data['activity_date'] <= cutoff_date]
-        target_period = user_data[user_data['activity_date'] > cutoff_date]
         
-        if len(training_period) == 0:
+        # Target period: data AFTER cutoff (next 14 days)
+        target_start = cutoff_date
+        target_end = cutoff_date + pd.Timedelta(days=14)
+        target_period = user_data[
+            (user_data['activity_date'] > target_start) & 
+            (user_data['activity_date'] <= target_end)
+        ]
+        
+        # Need at least some training data
+        if len(training_period) < 5:
             return None
         
         features = {}
         
         try:
+            # Last 7 days features
             last_7_days = training_period[
                 training_period['activity_date'] >= (cutoff_date - pd.Timedelta(days=7))
             ]
             features['active_days_last_7'] = last_7_days['activity_date'].nunique()
             features['transactions_last_7'] = last_7_days.get('daily_transactions', pd.Series([0])).sum()
             
+            # Overall activity features
             features['total_active_days'] = training_period['activity_date'].nunique()
             features['total_transactions'] = training_period.get('daily_transactions', pd.Series([0])).sum()
             
@@ -283,6 +304,7 @@ class FeatureService:
                 if features['total_active_days'] > 0 else 0
             )
             
+            # First week vs last week momentum
             week1 = training_period[
                 training_period['activity_date'] <= (training_period['activity_date'].min() + pd.Timedelta(days=7))
             ]
@@ -300,15 +322,20 @@ class FeatureService:
             else:
                 features['early_to_late_momentum'] = 0
             
+            # Consistency score
             training_sorted = training_period.sort_values('activity_date')
             training_sorted['days_gap'] = training_sorted['activity_date'].diff().dt.days
             std_gap = training_sorted['days_gap'].std()
-            features['consistency_score'] = 1 / (std_gap + 1) if std_gap > 0 else 1
+            features['consistency_score'] = 1 / (std_gap + 1) if pd.notna(std_gap) and std_gap > 0 else 1
             
+            # Days since last activity in training period
             features['days_since_last_activity'] = (
                 cutoff_date - training_period['activity_date'].max()
             ).days
             
+            # TARGET LABEL - FIX: This is where we determine churn
+            # User was active in next 14 days = stayed (0)
+            # User was NOT active in next 14 days = churned (1)
             features['will_be_active_next_14_days'] = 1 if len(target_period) > 0 else 0
             
             return features
@@ -319,7 +346,9 @@ class FeatureService:
     def create_training_dataset(self, daily_activity_df: pd.DataFrame) -> pd.DataFrame:
         training_data = []
         
+        # Get all user-game combinations
         for (user, project), group in daily_activity_df.groupby(['user_wallet', 'project']):
+            # Only include users with enough history (at least 10 days of data)
             if len(group) >= 10:
                 features = self.create_user_features(group, lookback_days=45)
                 if features:
@@ -328,7 +357,18 @@ class FeatureService:
                     training_data.append(features)
         
         df = pd.DataFrame(training_data)
-        logger.info(f"Created training dataset with {len(df)} samples")
+        
+        if not df.empty:
+            # Log class distribution
+            class_dist = df['will_be_active_next_14_days'].value_counts()
+            logger.info(f"Created training dataset with {len(df)} samples")
+            logger.info(f"Class distribution: Active={class_dist.get(1, 0)}, Churned={class_dist.get(0, 0)}")
+            
+            # Check if we have both classes
+            if len(class_dist) == 1:
+                logger.warning("⚠️ Training data has only 1 class! This will cause model training to fail.")
+                logger.warning("Consider adjusting the lookback_days or prediction window.")
+        
         return df
     
     def create_prediction_features(self, daily_activity_df: pd.DataFrame) -> pd.DataFrame:
@@ -842,7 +882,7 @@ async def predict_churn(method: str = Query(default="ensemble", pattern="^(champ
             "predictions": predictions[:100],
             "model_info": {
                 "champion": ml_manager.champion['name'],
-                "roc_auc": round(ml_manager.champion['roc_auc'], 4),
+                "roc_auc": safe_float(ml_manager.champion['roc_auc']),
                 "ensemble_models": [m['name'] for m in ml_manager.top_3_ensemble] if method == 'ensemble' else None
             },
             "note": "Showing first 100 predictions. Use /api/ml/predictions/churn/by-game for game-specific results."
@@ -885,7 +925,7 @@ async def predict_churn_by_game(method: str = Query(default="ensemble", pattern=
             "data": data,
             "model_info": {
                 "champion": ml_manager.champion['name'],
-                "roc_auc": round(ml_manager.champion['roc_auc'], 4)
+                "roc_auc": safe_float(ml_manager.champion['roc_auc'])
             }
         }
         
@@ -920,7 +960,7 @@ async def get_high_risk_users(limit: int = Query(default=100, ge=1, le=1000)):
             "users": data,
             "model_info": {
                 "champion": ml_manager.champion['name'],
-                "roc_auc": round(ml_manager.champion['roc_auc'], 4)
+                "roc_auc": safe_float(ml_manager.champion['roc_auc'])
             }
         }
         
@@ -944,10 +984,10 @@ async def get_model_leaderboard():
             {
                 "rank": i + 1,
                 "model_name": m['name'],
-                "roc_auc": round(m['roc_auc'], 4),
-                "accuracy": round(m['accuracy'], 4),
-                "precision": round(m['precision'], 4),
-                "recall": round(m['recall'], 4),
+                "roc_auc": safe_float(m['roc_auc']),
+                "accuracy": safe_float(m['accuracy']),
+                "precision": safe_float(m['precision']),
+                "recall": safe_float(m['recall']),
                 "training_time_seconds": round(m['training_time'], 2),
                 "is_champion": (i == 0),
                 "in_ensemble": (i < 3)
@@ -980,8 +1020,8 @@ async def get_model_info():
             "status": "trained",
             "champion": {
                 "name": ml_manager.champion['name'],
-                "roc_auc": round(ml_manager.champion['roc_auc'], 4),
-                "accuracy": round(ml_manager.champion.get('accuracy', 0), 4),
+                "roc_auc": safe_float(ml_manager.champion['roc_auc']),
+                "accuracy": safe_float(ml_manager.champion.get('accuracy', 0)),
                 "trained_at": ml_manager.champion.get('timestamp', 'Unknown')
             },
             "ensemble": {
@@ -1167,11 +1207,12 @@ async def force_refresh_and_train(request: Request):
             "total_queries": len(config.dune_queries),
             "models_trained": len(ml_results),
             "champion_model": ml_manager.champion['name'],
-            "champion_roc_auc": round(ml_manager.champion['roc_auc'], 4),
-            "champion_accuracy": round(ml_manager.champion.get('accuracy', 0), 4),
+            "champion_roc_auc": safe_float(ml_manager.champion['roc_auc']),
+            "champion_accuracy": safe_float(ml_manager.champion.get('accuracy', 0)),
             "top_3_ensemble": [m['name'] for m in ml_manager.top_3_ensemble],
             "training_samples": len(training_df),
-            "predictions_generated": len(prediction_df) if not prediction_df.empty else 0
+            "predictions_generated": len(prediction_df) if not prediction_df.empty else 0,
+            "warning": "ROC-AUC is null because training data has only 1 class" if ml_manager.champion and np.isnan(ml_manager.champion['roc_auc']) else None
         }
         
     except Exception as e:
