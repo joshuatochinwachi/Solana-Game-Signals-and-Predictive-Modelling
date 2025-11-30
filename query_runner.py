@@ -16,7 +16,8 @@ query_ids = [
             6255499,     # GAMERS BY GAMES PLAYED
             6258915,     # CROSS GAME GAMERS
             6251582,     # GAMING ACTIVITY TOTAL
-            6255551      # DAILY GAMING ACTIVITY
+            6255551,     # DAILY GAMING ACTIVITY
+            6273417      # INDIVIDUAL GAMER DAILY ACTIVITY
 ]
 
 headers = {"X-DUNE-API-KEY": dune_api_key}
