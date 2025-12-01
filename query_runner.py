@@ -82,3 +82,8 @@ while failed_queries:
         break
 
 print(f"\n🎉 Final: All {len(all_queries)} queries ran successfully!")
+
+# ONLY if everything runs successfully, send the POST request
+print("\n🔄 Sending cache refresh request...")
+refresh_response = requests.post("https://solana-game-signals-and-predictive-modelling-production.up.railway.app/api/cache/refresh")
+print(f"Cache refresh response: {refresh_response.status_code} - {refresh_response.text}")
