@@ -1,0 +1,11 @@
+{
+  "champion": "random_forest",
+  "champion_roc_auc": 0.8970458553791887,
+  "top_3": [
+    "random_forest",
+    "lightgbm",
+    "xgboost"
+  ],
+  "last_trained": "2025-12-01T03:51:53.740630",
+  "model_history": []
+}
