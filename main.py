@@ -88,7 +88,14 @@ logger = logging.getLogger(__name__)
 
 class Config:
     def __init__(self):
-        self.dune_api_key = os.getenv("DEFI_JOSH_DUNE_QUERY_API_KEY")
+
+        self.dune_api_keys = [
+            os.getenv("DEFI_JOSH_DUNE_QUERY_API_KEY_1"),
+            os.getenv("DEFI_JOSH_DUNE_QUERY_API_KEY_2"),
+            os.getenv("DEFI_JOSH_DUNE_QUERY_API_KEY_3")
+        ]
+
+        self.dune_api_keys = [key for key in self.dune_api_keys if key]
         
         self.dune_queries = {
             'gamer_activation': int(os.getenv('QUERY_ID_GAMER_ACTIVATION', 6255646)),
@@ -104,7 +111,7 @@ class Config:
             'user_daily_activity': int(os.getenv('QUERY_ID_USER_DAILY_ACTIVITY', 6273417))
         }
         
-        self.cache_duration = int(os.getenv('CACHE_DURATION', 86400))
+        self.cache_duration = int(os.getenv('CACHE_DURATION', 259200)) # 72 hours
         self.min_training_samples = int(os.getenv('MIN_TRAINING_SAMPLES', 100))
         self.prediction_window_days = int(os.getenv('PREDICTION_WINDOW_DAYS', 14))
         self.api_secret = os.getenv('FASTAPI_SECRET', '')
@@ -129,8 +136,14 @@ class CacheManager:
         self.cache_dir = "raw_data_cache"
         os.makedirs(self.cache_dir, exist_ok=True)
         
-        if config.dune_api_key:
-            self.dune_client = DuneClient(config.dune_api_key)
+        self.current_key_index = 0
+        self.rotation_file = os.path.join(self.cache_dir, "api_key_rotation.json")
+        self._load_rotation_state()
+        
+        if config.dune_api_keys:
+            current_key = config.dune_api_keys[self.current_key_index]
+            self.dune_client = DuneClient(current_key)
+            logger.info(f"Initialized with API key #{self.current_key_index + 1}")
         
         self.metadata_file = os.path.join(self.cache_dir, "cache_metadata.json")
         self.metadata = self._load_metadata()
@@ -143,6 +156,47 @@ class CacheManager:
             except:
                 return {}
         return {}
+    
+    def _load_rotation_state(self):
+        """Load the last used API key index"""
+        if os.path.exists(self.rotation_file):
+            try:
+                with open(self.rotation_file, 'r') as f:
+                    data = json.load(f)
+                    self.current_key_index = data.get('current_index', 0)
+            except:
+                self.current_key_index = 0
+        else:
+            self.current_key_index = 0
+    
+    def _save_rotation_state(self):
+        """Save the current API key index"""
+        try:
+            with open(self.rotation_file, 'w') as f:
+                json.dump({
+                    'current_index': self.current_key_index,
+                    'last_rotated': datetime.now().isoformat()
+                }, f, indent=2)
+        except Exception as e:
+            logger.error(f"Failed to save rotation state: {e}")
+    
+    def _rotate_api_key(self):
+        """Rotate to the next API key in round-robin fashion"""
+        if not config.dune_api_keys:
+            logger.warning("No API keys available for rotation")
+            return
+        
+        # Move to next key
+        self.current_key_index = (self.current_key_index + 1) % len(config.dune_api_keys)
+        
+        # Update the Dune client with new key
+        new_key = config.dune_api_keys[self.current_key_index]
+        self.dune_client = DuneClient(new_key)
+        
+        # Save the rotation state
+        self._save_rotation_state()
+        
+        logger.info(f"🔄 Rotated to API key #{self.current_key_index + 1}/{len(config.dune_api_keys)}")
     
     def _save_metadata(self):
         try:
@@ -1083,6 +1137,9 @@ async def force_refresh_and_train(request: Request):
         logger.info("FORCE REFRESH TRIGGERED")
         logger.info("=" * 60)
         
+        # ROTATE API KEY BEFORE FETCHING DATA
+        cache_manager._rotate_api_key()
+        
         start_time = time.time()
         
         # Step 1: Fetch all data
@@ -1226,7 +1283,9 @@ async def health_check():
         "status": "healthy",
         "timestamp": datetime.now().isoformat(),
         "version": "1.0.0",
-        "dune_api_configured": bool(config.dune_api_key),
+        "dune_api_configured": bool(config.dune_api_keys),
+        "total_api_keys": len(config.dune_api_keys),
+        "current_api_key_index": cache_manager.current_key_index + 1,
         "ml_models_trained": ml_manager.champion is not None,
         "champion_model": ml_manager.champion['name'] if ml_manager.champion else None,
         "models_available": list(ml_manager.model_configs.keys())
