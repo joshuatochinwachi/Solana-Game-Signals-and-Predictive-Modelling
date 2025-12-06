@@ -27,7 +27,7 @@ export const useAutoRefresh = <T>(endpoint: string, interval = 30000) => {
                     // Ensure strict UTC parsing
                     const apiTimeStr = result.metadata?.last_updated;
                     const apiTime = apiTimeStr
-                        ? new Date(apiTimeStr.endsWith('Z') ? apiTimeStr : apiTimeStr + 'Z')
+                        ? new Date((apiTimeStr.endsWith('Z') ? apiTimeStr : apiTimeStr + 'Z').replace(' ', 'T'))
                         : new Date();
                     setLastUpdate(apiTime);
                     setError(null);

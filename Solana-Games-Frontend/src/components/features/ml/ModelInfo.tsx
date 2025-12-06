@@ -37,7 +37,7 @@ export const ModelInfoFeature: React.FC = () => {
         let lastTrained = '-';
         if (trainedAt) {
             try {
-                const date = new Date(trainedAt);
+                const date = new Date(trainedAt.replace(' ', 'T'));
                 const now = new Date();
                 const diffMs = now.getTime() - date.getTime();
                 const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
