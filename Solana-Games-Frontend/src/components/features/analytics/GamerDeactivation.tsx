@@ -4,7 +4,7 @@ import type { GamerDeactivation } from '../../../types/api';
 import { GlassCard } from '../../ui/GlassCard';
 import { CompleteDataTable } from '../../ui/CompleteDataTable';
 import { KPICard } from '../../ui/KPICard';
-import { safeNumber, formatNumber } from '../../../utils/formatters';
+import { safeNumber, formatNumber, safeDate } from '../../../utils/formatters';
 import {
     BarChart,
     Bar,
@@ -43,7 +43,7 @@ export const GamerDeactivationFeature: React.FC = () => {
             return acc;
         }, {} as Record<string, any>);
 
-        return Object.values(grouped).sort((a, b) => new Date(a.week).getTime() - new Date(b.week).getTime());
+        return Object.values(grouped).sort((a, b) => (safeDate(a.week)?.getTime() || 0) - (safeDate(b.week)?.getTime() || 0));
     }, [data]);
 
     const projects = useMemo(() => {
@@ -90,7 +90,8 @@ export const GamerDeactivationFeature: React.FC = () => {
                     if (!dateStr) return '-';
                     // Handle "YYYY-MM-DD HH:mm:ss.SSS UTC" format
                     const cleanDate = dateStr.split(' ')[0];
-                    const start = parseISO(cleanDate);
+                    const start = safeDate(cleanDate);
+                    if (!start) return '-';
                     const end = addDays(start, 6);
                     return <span className="font-mono">{`${format(start, 'MMM dd')} - ${format(end, 'MMM dd')}`}</span>;
                 } catch {
@@ -148,7 +149,8 @@ export const GamerDeactivationFeature: React.FC = () => {
                             dataKey="week"
                             tickFormatter={(str) => {
                                 try {
-                                    const start = parseISO(str);
+                                    const start = safeDate(str);
+                                    if (!start) return str;
                                     const end = addDays(start, 6);
                                     return `${format(start, 'MMM dd')} - ${format(end, 'MMM dd')}`;
                                 } catch {
@@ -168,7 +170,8 @@ export const GamerDeactivationFeature: React.FC = () => {
                             labelStyle={{ color: '#FF4444', marginBottom: '0.5rem' }}
                             labelFormatter={(label) => {
                                 try {
-                                    const start = parseISO(label);
+                                    const start = safeDate(label);
+                                    if (!start) return label;
                                     const end = addDays(start, 6);
                                     return `${format(start, 'MMM dd')} - ${format(end, 'MMM dd, yyyy')}`;
                                 } catch {

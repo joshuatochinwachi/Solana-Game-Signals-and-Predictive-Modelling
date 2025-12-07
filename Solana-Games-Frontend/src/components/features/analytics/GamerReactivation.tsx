@@ -4,7 +4,7 @@ import type { GamerReactivation } from '../../../types/api';
 import { GlassCard } from '../../ui/GlassCard';
 import { CompleteDataTable } from '../../ui/CompleteDataTable';
 import { KPICard } from '../../ui/KPICard';
-import { safeNumber, formatNumber } from '../../../utils/formatters';
+import { safeNumber, formatNumber, safeDate } from '../../../utils/formatters';
 import {
     BarChart,
     Bar,
@@ -43,7 +43,7 @@ export const GamerReactivationFeature: React.FC = () => {
             return acc;
         }, {} as Record<string, any>);
 
-        return Object.values(grouped).sort((a, b) => new Date(a.week).getTime() - new Date(b.week).getTime());
+        return Object.values(grouped).sort((a, b) => (safeDate(a.week)?.getTime() || 0) - (safeDate(b.week)?.getTime() || 0));
     }, [data]);
 
     const projects = useMemo(() => {
@@ -77,7 +77,8 @@ export const GamerReactivationFeature: React.FC = () => {
             bestWeek: bestWeek ? (() => {
                 try {
                     const cleanDate = bestWeek[0].split(' ')[0];
-                    const start = parseISO(cleanDate);
+                    const start = safeDate(cleanDate);
+                    if (!start) return bestWeek[0].split(' ')[0];
                     const end = addDays(start, 6);
                     return `${format(start, 'MMM dd')} - ${format(end, 'MMM dd')}`;
                 } catch {
@@ -97,7 +98,8 @@ export const GamerReactivationFeature: React.FC = () => {
                     if (!dateStr) return '-';
                     // Handle "YYYY-MM-DD HH:mm:ss.SSS UTC" format
                     const cleanDate = dateStr.split(' ')[0];
-                    const start = parseISO(cleanDate);
+                    const start = safeDate(cleanDate);
+                    if (!start) return '-';
                     const end = addDays(start, 6);
                     return <span className="font-mono">{`${format(start, 'MMM dd')} - ${format(end, 'MMM dd')}`}</span>;
                 } catch {
@@ -155,7 +157,8 @@ export const GamerReactivationFeature: React.FC = () => {
                             dataKey="week"
                             tickFormatter={(str) => {
                                 try {
-                                    const start = parseISO(str);
+                                    const start = safeDate(str);
+                                    if (!start) return str;
                                     const end = addDays(start, 6);
                                     return `${format(start, 'MMM dd')} - ${format(end, 'MMM dd')}`;
                                 } catch {
@@ -175,7 +178,8 @@ export const GamerReactivationFeature: React.FC = () => {
                             labelStyle={{ color: '#9945FF', marginBottom: '0.5rem' }}
                             labelFormatter={(label) => {
                                 try {
-                                    const start = parseISO(label);
+                                    const start = safeDate(label);
+                                    if (!start) return label;
                                     const end = addDays(start, 6);
                                     return `${format(start, 'MMM dd')} - ${format(end, 'MMM dd, yyyy')}`;
                                 } catch {

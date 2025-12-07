@@ -45,66 +45,13 @@ const TiltCard = ({ children, className }: { children: React.ReactNode; classNam
     );
 };
 
-// ML Terminal Component
-const MLTerminal = () => {
-    const [logs, setLogs] = useState<string[]>([]);
-    const maxLogs = 6;
 
-    useEffect(() => {
-        const possibleLogs = [
-            "Analyzing wallet 8x...3f",
-            "Calculating churn probability...",
-            "Ensemble: Aggregating votes",
-            "Inference time: 12ms",
-            "Risk Score: LOW (0.12)",
-            "LTV Prediction: +145% vs avg",
-            "Pattern detected: Whale behavior",
-            "Updating retention cohort...",
-            "Model confidence: 98.4%",
-            "Processing transaction graph..."
-        ];
-
-        const interval = setInterval(() => {
-            const newLog = `[${new Date().toLocaleTimeString()}] ${possibleLogs[Math.floor(Math.random() * possibleLogs.length)]}`;
-            setLogs(prev => [...prev.slice(-(maxLogs - 1)), newLog]);
-        }, 800);
-
-        return () => clearInterval(interval);
-    }, []);
-
-    return (
-        <div className="hidden lg:block absolute bottom-8 right-8 w-80 font-mono text-xs z-30 pointer-events-none">
-            <div className="bg-black/80 border border-solana-green/30 p-4 rounded-lg backdrop-blur-md shadow-[0_0_20px_rgba(0,230,118,0.1)]">
-                <div className="flex items-center justify-between mb-2 border-b border-solana-green/20 pb-2">
-                    <span className="text-solana-green font-bold flex items-center gap-2">
-                        <div className="w-2 h-2 bg-solana-green animate-pulse rounded-full" />
-                        LIVE INFERENCE
-                    </span>
-                    <span className="text-solana-green/50">v2.4.0</span>
-                </div>
-                <div className="space-y-1 h-32 overflow-hidden flex flex-col justify-end">
-                    {logs.map((log, i) => (
-                        <motion.div
-                            key={i}
-                            initial={{ opacity: 0, x: -10 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            className="text-solana-green/80 truncate"
-                        >
-                            <span className="text-solana-purple mr-2">{'>'}</span>
-                            {log}
-                        </motion.div>
-                    ))}
-                </div>
-            </div>
-        </div>
-    );
-};
 
 export const LandingPage: React.FC = () => {
     const navigate = useNavigate();
     const [textIndex, setTextIndex] = useState(0);
     const [displayedText, setDisplayedText] = useState('');
-    const fullText = "SYSTEM INITIALIZED: PLAYER BEHAVIOR MODELING ACTIVE";
+    const fullText = "PLAYER BEHAVIOR MODELING & PREDICTIVE FORECASTING ACTIVE";
 
     // Typing effect
     useEffect(() => {
@@ -155,8 +102,7 @@ export const LandingPage: React.FC = () => {
                 </div>
             </div>
 
-            {/* Live ML Terminal */}
-            <MLTerminal />
+
 
             {/* Animated Background Grid */}
             <div className="absolute inset-0 z-0 opacity-30">
@@ -196,14 +142,14 @@ export const LandingPage: React.FC = () => {
                         <Brain className="w-3 h-3" /> POWERED BY PREDICTIVE AI/ML
                     </motion.div>
 
-                    <h1 className="text-7xl md:text-9xl font-black tracking-tighter mb-4 text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 drop-shadow-[0_0_15px_rgba(20,241,149,0.5)] relative group cursor-default">
+                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 drop-shadow-[0_0_15px_rgba(20,241,149,0.5)] relative group cursor-default">
                         <span className="absolute inset-0 text-solana-green/30 blur-sm translate-x-[2px] group-hover:translate-x-[-4px] transition-transform duration-75">SOLANA</span>
                         <span className="absolute inset-0 text-solana-purple/30 blur-sm -translate-x-[2px] group-hover:translate-x-[4px] transition-transform duration-75">SOLANA</span>
                         SOLANA
                     </h1>
 
-                    <h2 className="text-4xl md:text-6xl font-black tracking-widest text-solana-green mb-8 uppercase drop-shadow-[0_0_10px_rgba(20,241,149,0.8)]">
-                        ANALYTICS
+                    <h2 className="text-3xl md:text-5xl font-black tracking-widest text-solana-green mb-6 uppercase drop-shadow-[0_0_10px_rgba(20,241,149,0.8)]">
+                        GAME ANALYTICS
                     </h2>
 
                     <div className="h-8 mb-12 flex justify-center items-center gap-2">
@@ -214,17 +160,47 @@ export const LandingPage: React.FC = () => {
                         </p>
                     </div>
 
-                    <motion.button
-                        whileHover={{ scale: 1.05, letterSpacing: "0.2em" }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={handleEnter}
-                        className="group relative px-16 py-5 bg-black overflow-hidden clip-path-polygon border border-solana-green text-solana-green font-bold text-xl tracking-widest uppercase transition-all duration-300 hover:bg-solana-green hover:text-black hover:shadow-[0_0_50px_rgba(20,241,149,0.6)]"
-                        style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
-                    >
-                        <span className="relative z-10 flex items-center gap-3">
-                            Initialize System <Zap className="w-5 h-5 group-hover:fill-black transition-colors" />
-                        </span>
-                    </motion.button>
+                    <div className="flex flex-col items-center gap-4">
+                        <motion.div
+                            animate={{
+                                opacity: [0, 1, 0]
+                            }}
+                            transition={{
+                                duration: 1.5,
+                                repeat: Infinity,
+                                ease: "linear"
+                            }}
+                            className="text-solana-green font-mono text-xl tracking-[0.5em] font-bold"
+                        >
+                            PRESS START
+                        </motion.div>
+                        <motion.button
+                            whileHover={{ scale: 1.05, letterSpacing: "0.2em", boxShadow: "0 0 80px rgba(20,241,149,0.8)" }}
+                            whileTap={{ scale: 0.95 }}
+                            animate={{
+                                boxShadow: ["0 0 20px rgba(20,241,149,0.4)", "0 0 40px rgba(20,241,149,0.6)", "0 0 20px rgba(20,241,149,0.4)"],
+                                y: [0, -4, 0],
+                                scale: [1, 1.02, 1]
+                            }}
+                            transition={{
+                                boxShadow: { duration: 2, repeat: Infinity },
+                                y: { duration: 0.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" },
+                                scale: { duration: 0.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }
+                            }}
+                            onClick={handleEnter}
+                            className="group relative px-20 py-6 bg-black overflow-hidden clip-path-polygon border-2 border-solana-green text-solana-green font-black text-2xl tracking-widest uppercase transition-all duration-300 hover:bg-solana-green hover:text-black cursor-pointer z-50"
+                            style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
+                        >
+                            <span className="relative z-10 flex items-center gap-4">
+                                <Zap className="w-6 h-6 animate-pulse" /> INITIALIZE SYSTEM <Zap className="w-6 h-6 animate-pulse" />
+                            </span>
+                        </motion.button>
+                        <motion.div
+                            initial={{ width: 0 }}
+                            animate={{ width: "100%" }}
+                            className="h-px bg-gradient-to-r from-transparent via-solana-green to-transparent w-full max-w-md mt-4"
+                        />
+                    </div>
                 </motion.div>
 
                 {/* 3D Feature Cards */}

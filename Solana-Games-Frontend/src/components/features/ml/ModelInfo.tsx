@@ -13,7 +13,7 @@ import {
     ResponsiveContainer
 } from 'recharts';
 import { Brain, Layers, GitBranch, Database, Cpu } from 'lucide-react';
-import { safeNumber, formatNumber } from '../../../utils/formatters';
+import { safeNumber, formatNumber, safeDate } from '../../../utils/formatters';
 
 export const ModelInfoFeature: React.FC = () => {
     const { data, loading, error } = useAutoRefresh<ModelInfo>('/api/ml/models/info');
@@ -37,11 +37,13 @@ export const ModelInfoFeature: React.FC = () => {
         let lastTrained = '-';
         if (trainedAt) {
             try {
-                const date = new Date(trainedAt.replace(' ', 'T'));
-                const now = new Date();
-                const diffMs = now.getTime() - date.getTime();
-                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                lastTrained = diffHours < 24 ? `${diffHours} hours ago` : `${Math.floor(diffHours / 24)} days ago`;
+                const date = safeDate(trainedAt);
+                if (date) {
+                    const now = new Date();
+                    const diffMs = now.getTime() - date.getTime();
+                    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                    lastTrained = diffHours < 24 ? `${diffHours} hours ago` : `${Math.floor(diffHours / 24)} days ago`;
+                }
             } catch (e) {
                 lastTrained = '-';
             }

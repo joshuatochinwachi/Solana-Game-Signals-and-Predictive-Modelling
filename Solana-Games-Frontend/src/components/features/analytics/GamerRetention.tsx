@@ -3,7 +3,7 @@ import { useAutoRefresh } from '../../../hooks/useAutoRefresh';
 import type { GamerRetention } from '../../../types/api';
 import { GlassCard } from '../../ui/GlassCard';
 import { KPICard } from '../../ui/KPICard';
-import { safeNumber, formatNumber } from '../../../utils/formatters';
+import { safeNumber, formatNumber, safeDate } from '../../../utils/formatters';
 import {
     LineChart,
     Line,
@@ -43,8 +43,8 @@ export const GamerRetentionFeature: React.FC = () => {
                 return gameA.localeCompare(gameB);
             }
 
-            const dateA = new Date(a.cohort_week || a['cohort week'] || 0).getTime();
-            const dateB = new Date(b.cohort_week || b['cohort week'] || 0).getTime();
+            const dateA = safeDate(a.cohort_week || a['cohort week'])?.getTime() || 0;
+            const dateB = safeDate(b.cohort_week || b['cohort week'])?.getTime() || 0;
             return dateA - dateB; // Ascending
         });
 
@@ -109,7 +109,8 @@ export const GamerRetentionFeature: React.FC = () => {
 
         return {
             bestCohort: bestCohort ? (() => {
-                const start = new Date(bestCohort.cohort);
+                const start = safeDate(bestCohort.cohort);
+                if (!start) return '-';
                 const end = addDays(start, 6);
                 return `${format(start, 'MMM dd')} - ${format(end, 'MMM dd')}`;
             })() : '-',
@@ -193,7 +194,8 @@ export const GamerRetentionFeature: React.FC = () => {
                                 <tr key={i} className="hover:bg-white/5 transition-colors">
                                     <td className="p-3 font-mono text-text-primary whitespace-nowrap">
                                         {(() => {
-                                            const start = new Date(row.cohort);
+                                            const start = safeDate(row.cohort);
+                                            if (!start) return row.cohort;
                                             const end = addDays(start, 6);
                                             return `${format(start, 'MMM dd')} - ${format(end, 'MMM dd')}`;
                                         })()}

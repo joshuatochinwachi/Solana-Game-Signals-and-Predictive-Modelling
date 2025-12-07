@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { safeDate } from '../../utils/formatters';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://solana-game-signals-and-predictive-modelling-production.up.railway.app';
 
@@ -6,7 +7,9 @@ const formatTimestamp = (timestamp: string): string => {
     try {
         // Ensure the timestamp is treated as UTC by appending 'Z' if not present
         const utcTimestamp = timestamp.endsWith('Z') ? timestamp : timestamp + 'Z';
-        const date = new Date(utcTimestamp);
+        const date = safeDate(utcTimestamp);
+
+        if (!date) return timestamp;
 
         return date.toLocaleString('en-US', {
             month: 'short',
