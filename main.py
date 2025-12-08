@@ -387,10 +387,10 @@ class FeatureService:
                 cutoff_date - training_period['activity_date'].max()
             ).days
             
-            # TARGET LABEL - FIX: This is where we determine churn
-            # User was active in next 14 days = stayed (0)
-            # User was NOT active in next 14 days = churned (1)
-            features['will_be_active_next_14_days'] = 1 if len(target_period) > 0 else 0
+            # CRITICAL FIX: Correct churn labeling
+            # If user was ACTIVE in next 14 days → did NOT churn (0)
+            # If user was NOT active in next 14 days → DID churn (1)
+            features['will_churn'] = 0 if len(target_period) > 0 else 1
             
             return features
         except Exception as e:
@@ -414,9 +414,14 @@ class FeatureService:
         
         if not df.empty:
             # Log class distribution
-            class_dist = df['will_be_active_next_14_days'].value_counts()
-            logger.info(f"Created training dataset with {len(df)} samples")
-            logger.info(f"Class distribution: Active={class_dist.get(1, 0)}, Churned={class_dist.get(0, 0)}")
+            class_dist = df['will_churn'].value_counts()
+            total = len(df)
+            churned = class_dist.get(1, 0)
+            retained = class_dist.get(0, 0)
+
+            logger.info(f"✓ Created training dataset with {total} samples")
+            logger.info(f"  - Churned (1): {churned} ({churned/total*100:.1f}%)")
+            logger.info(f"  - Retained (0): {retained} ({retained/total*100:.1f}%)")
             
             # Check if we have both classes
             if len(class_dist) == 1:
@@ -549,7 +554,7 @@ class MLModelManager:
         logger.info("=" * 60)
         
         X = training_df[self.feature_columns].fillna(0)
-        y = training_df['will_be_active_next_14_days']
+        y = training_df['will_churn']
         
         X_train, X_test, y_train, y_test = train_test_split(
             X, y, test_size=0.25, random_state=42, stratify=y
@@ -619,7 +624,8 @@ class MLModelManager:
         
         X = prediction_df[self.feature_columns].fillna(0)
         X_scaled = self.scaler.transform(X)
-        churn_proba = 1 - self.champion['model'].predict_proba(X_scaled)[:, 1]
+        # CRITICAL FIX: Model predicts class 1 = churn, so use [:, 1] directly
+        churn_proba = self.champion['model'].predict_proba(X_scaled)[:, 1]
         return churn_proba
     
     def predict_ensemble(self, prediction_df: pd.DataFrame) -> np.ndarray:
@@ -633,7 +639,8 @@ class MLModelManager:
         weights = []
         
         for model_info in self.top_3_ensemble:
-            pred = 1 - model_info['model'].predict_proba(X_scaled)[:, 1]
+            # CRITICAL FIX: Use [:, 1] directly for churn probability
+            pred = model_info['model'].predict_proba(X_scaled)[:, 1]
             predictions.append(pred)
             weights.append(model_info['roc_auc'])
         
@@ -1229,21 +1236,39 @@ async def force_refresh_and_train(request: Request):
         prediction_df = feature_service.create_prediction_features(daily_activity)
         
         if not prediction_df.empty:
-            # Champion predictions
+            # Champion predictions with DYNAMIC thresholds
             champion_pred = ml_manager.predict_champion(prediction_df)
             prediction_df_champion = prediction_df.copy()
             prediction_df_champion['churn_probability'] = champion_pred
+
+            # Calculate percentile-based thresholds (ensures meaningful distribution)
+            p85 = np.percentile(champion_pred, 85)  # Top 15% = High risk
+            p50 = np.percentile(champion_pred, 50)  # Middle = Medium risk
+            high_threshold = max(0.5, min(0.8, p85))
+            medium_threshold = max(0.2, min(0.5, p50))
+
+            logger.info(f"📊 Champion Thresholds: High>{high_threshold:.2f}, Medium>{medium_threshold:.2f}")
+
             prediction_df_champion['churn_risk'] = prediction_df_champion['churn_probability'].apply(
-                lambda x: 'High' if x > 0.65 else ('Medium' if x > 0.35 else 'Low')
+                lambda x: 'High' if x > high_threshold else ('Medium' if x > medium_threshold else 'Low')
             )
             cache_manager.cache_data('predictions_champion', prediction_df_champion)
-            
-            # Ensemble predictions
+
+            # Ensemble predictions with DYNAMIC thresholds
             ensemble_pred = ml_manager.predict_ensemble(prediction_df)
             prediction_df_ensemble = prediction_df.copy()
             prediction_df_ensemble['churn_probability'] = ensemble_pred
+
+            # Calculate percentile-based thresholds for ensemble too
+            p85_ens = np.percentile(ensemble_pred, 85)
+            p50_ens = np.percentile(ensemble_pred, 50)
+            high_threshold_ens = max(0.5, min(0.8, p85_ens))
+            medium_threshold_ens = max(0.2, min(0.5, p50_ens))
+
+            logger.info(f"📊 Ensemble Thresholds: High>{high_threshold_ens:.2f}, Medium>{medium_threshold_ens:.2f}")
+
             prediction_df_ensemble['churn_risk'] = prediction_df_ensemble['churn_probability'].apply(
-                lambda x: 'High' if x > 0.65 else ('Medium' if x > 0.35 else 'Low')
+                lambda x: 'High' if x > high_threshold_ens else ('Medium' if x > medium_threshold_ens else 'Low')
             )
             cache_manager.cache_data('predictions_ensemble', prediction_df_ensemble)
         
