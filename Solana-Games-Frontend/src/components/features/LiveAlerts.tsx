@@ -21,9 +21,10 @@ export const LiveAlerts: React.FC = () => {
         const newAlerts: Alert[] = [];
 
         // 1. Churn Risk Alert
-        if (churnData?.summary) {
-            const highRisk = churnData.summary.high_risk || 0;
-            const totalUsers = churnData.summary.total_users || 1;
+        if ((churnData as any)?.summary) {
+            const summary = (churnData as any).summary;
+            const highRisk = summary.high_risk || 0;
+            const totalUsers = summary.total_users || 1;
             const highRiskPercent = (highRisk / totalUsers) * 100;
 
             if (highRiskPercent > 5) {
@@ -36,13 +37,15 @@ export const LiveAlerts: React.FC = () => {
                     color: 'border-risk-high bg-risk-high/10'
                 });
             } else if (highRiskPercent < 3) {
+                const summary = (churnData as any).summary;
+                const avgChurnProb = ((summary?.avg_churn_probability || 0) * 100).toFixed(1);
                 newAlerts.push({
                     type: 'success',
                     icon: <CheckCircle className="w-6 h-6 text-solana-green" />,
                     title: 'ECOSYSTEM HEALTHY',
-                    message: `Only ${highRiskPercent.toFixed(1)}% of users at high churn risk - ecosystem performing well.`,
+                    message: `Only ${highRiskPercent.toFixed(1)}% of users at high churn risk (Avg Churn Prob: ${avgChurnProb}%) - ecosystem performing well. Percentages apply to the analyzed cohort.`,
                     action: 'Maintain current engagement strategies.',
-                    color: 'border-solana-green bg-solana-green/10'
+                    color: 'border-solana-green bg-solana-green/10 text-text-primary'
                 });
             }
         }
@@ -73,7 +76,7 @@ export const LiveAlerts: React.FC = () => {
                         {alert.icon}
                     </div>
                     <div className="flex-1">
-                        <h4 className="font-bold text-lg text-white mb-1 font-gaming tracking-wide">
+                        <h4 className="font-bold text-lg text-text-primary mb-1 font-gaming tracking-wide">
                             {alert.title}
                         </h4>
                         <p className="text-text-secondary mb-2">

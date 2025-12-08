@@ -73,11 +73,11 @@ export const CompleteDataTable = <T extends Record<string, any>>({
     return (
         <div className={`w-full bg-bg-secondary/50 backdrop-blur-xl rounded-xl border border-white/5 overflow-hidden flex flex-col ${className}`}>
             {/* Header */}
-            <div className="p-6 border-b border-white/5 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div className="p-6 border-b border-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h3 className="text-xl font-gaming font-bold text-white flex items-center gap-2">
+                    <h3 className="text-xl font-gaming font-bold text-text-primary flex items-center gap-2">
                         {title}
-                        <span className="text-xs font-mono font-normal text-text-secondary bg-white/5 px-2 py-0.5 rounded-full">
+                        <span className="text-xs font-mono font-normal text-text-secondary bg-bg-tertiary px-2 py-0.5 rounded-full">
                             {filteredData.length} records
                         </span>
                     </h3>
@@ -92,7 +92,7 @@ export const CompleteDataTable = <T extends Record<string, any>>({
                                 placeholder="Search data..."
                                 value={search}
                                 onChange={(e) => { setSearch(e.target.value); setPage(1); }}
-                                className="w-full pl-9 pr-4 py-2 bg-bg-tertiary border border-white/10 rounded-lg text-sm text-white focus:outline-none focus:border-solana-purple transition-colors"
+                                className="w-full pl-9 pr-4 py-2 bg-bg-tertiary border border-border rounded-lg text-sm text-text-primary focus:outline-none focus:border-solana-purple transition-colors"
                             />
                         </div>
                     )}
@@ -104,7 +104,7 @@ export const CompleteDataTable = <T extends Record<string, any>>({
                                 px-4 py-2 rounded-lg text-sm font-medium transition-all
                                 ${showAll
                                     ? 'bg-solana-purple text-white shadow-[0_0_15px_rgba(153,69,255,0.3)]'
-                                    : 'bg-bg-tertiary text-text-secondary hover:text-white hover:bg-white/10'}
+                                    : 'bg-bg-tertiary text-text-secondary hover:text-text-primary hover:bg-bg-tertiary/80'}
                             `}
                         >
                             {showAll ? 'Show Paged' : 'Show All'}
@@ -139,12 +139,12 @@ export const CompleteDataTable = <T extends Record<string, any>>({
                             ))}
                         </tr>
                     </thead>
-                    <tbody className="divide-y divide-white/5">
+                    <tbody className="divide-y divide-border">
                         {displayData.length > 0 ? (
                             displayData.map((row, rowIdx) => (
                                 <tr
                                     key={rowIdx}
-                                    className="hover:bg-white/5 transition-colors group"
+                                    className="hover:bg-bg-tertiary/50 transition-colors group"
                                 >
                                     {columns.map((col, colIdx) => (
                                         <td key={`${rowIdx}-${colIdx}`} className="px-6 py-4 text-sm text-text-primary whitespace-nowrap">
@@ -169,7 +169,7 @@ export const CompleteDataTable = <T extends Record<string, any>>({
 
             {/* Pagination */}
             {!showAll && totalPages > 1 && (
-                <div className="p-4 border-t border-white/5 flex justify-between items-center bg-bg-tertiary/30">
+                <div className="p-4 border-t border-border flex justify-between items-center bg-bg-tertiary/30">
                     <div className="text-xs text-text-secondary">
                         Page {page} of {totalPages}
                     </div>
@@ -177,14 +177,14 @@ export const CompleteDataTable = <T extends Record<string, any>>({
                         <button
                             onClick={() => setPage(p => Math.max(1, p - 1))}
                             disabled={page === 1}
-                            className="p-2 rounded-lg bg-bg-tertiary hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="p-2 rounded-lg bg-bg-tertiary hover:bg-bg-tertiary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <ChevronLeft className="w-4 h-4" />
                         </button>
                         <button
                             onClick={() => setPage(p => Math.min(totalPages, p + 1))}
                             disabled={page === totalPages}
-                            className="p-2 rounded-lg bg-bg-tertiary hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="p-2 rounded-lg bg-bg-tertiary hover:bg-bg-tertiary/80 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                         >
                             <ChevronRight className="w-4 h-4" />
                         </button>

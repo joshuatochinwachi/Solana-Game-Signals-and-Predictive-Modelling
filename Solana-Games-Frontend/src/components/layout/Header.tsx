@@ -1,7 +1,6 @@
 import React from 'react';
 import { Gamepad2 } from 'lucide-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { ThemeToggle } from '../ui/ThemeToggle';
 import { LiveIndicator } from '../ui/LiveIndicator';
 
 export const Header: React.FC = () => {
@@ -35,7 +34,7 @@ export const Header: React.FC = () => {
                         <WalletMultiButton />
                     </div>
 
-                    <ThemeToggle />
+
                 </div>
             </div>
         </header>

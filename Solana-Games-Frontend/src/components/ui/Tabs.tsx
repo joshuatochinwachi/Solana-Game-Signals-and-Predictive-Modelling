@@ -14,7 +14,7 @@ interface TabsProps {
 
 export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onTabChange }) => {
     return (
-        <div className="w-full border-b border-white/10 mb-8">
+        <div className="w-full border-b border-border mb-8">
             <div className="flex gap-2 overflow-x-auto custom-scrollbar">
                 {tabs.map((tab) => (
                     <button
@@ -23,8 +23,8 @@ export const Tabs: React.FC<TabsProps> = ({ tabs, activeTab, onTabChange }) => {
                         className={`
                             px-6 py-3 font-gaming font-bold text-sm whitespace-nowrap transition-all relative
                             ${activeTab === tab.id
-                                ? 'text-white border-b-2 border-solana-cyan'
-                                : 'text-text-secondary hover:text-white hover:bg-white/5'
+                                ? 'text-text-primary border-b-2 border-solana-cyan'
+                                : 'text-text-secondary hover:text-text-primary hover:bg-bg-tertiary'
                             }
                         `}
                     >

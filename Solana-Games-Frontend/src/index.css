@@ -16,15 +16,6 @@
 }
 
 :root {
-  --bg-primary: #FFFFFF;
-  --bg-secondary: #F5F5F7;
-  --bg-tertiary: #E8E8ED;
-  --text-primary: #1A1A1D;
-  --text-secondary: #5A5A5F;
-  --border: #D1D1D6;
-}
-
-.dark {
   --bg-primary: #0D0D0F;
   --bg-secondary: #1A1A1D;
   --bg-tertiary: #2A2A2F;

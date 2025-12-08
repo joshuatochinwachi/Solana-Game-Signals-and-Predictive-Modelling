@@ -33,6 +33,7 @@ from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.preprocessing import StandardScaler
 from sklearn.metrics import roc_auc_score, accuracy_score, precision_score, recall_score
 from sklearn.model_selection import train_test_split
+from imblearn.over_sampling import SMOTE
 
 def clean_dataframe_for_json(df: pd.DataFrame) -> pd.DataFrame:
     """
@@ -510,19 +511,30 @@ class MLModelManager:
         
         self.model_configs = {
             'logistic_regression': {
-                'model': LogisticRegression(max_iter=1000, random_state=42),
+                'model': LogisticRegression(
+                    max_iter=1000, 
+                    random_state=42,
+                    class_weight='balanced'  # Penalize minority class errors more
+                ),
                 'priority': 3
             },
             'random_forest': {
                 'model': RandomForestClassifier(
-                    n_estimators=100, max_depth=8, min_samples_split=10,
-                    random_state=42, n_jobs=-1
+                    n_estimators=100, 
+                    max_depth=8, 
+                    min_samples_split=10,
+                    random_state=42, 
+                    n_jobs=-1,
+                    class_weight='balanced'  # Penalize minority class errors more
                 ),
                 'priority': 2
             },
             'gradient_boosting': {
                 'model': GradientBoostingClassifier(
-                    n_estimators=100, max_depth=6, learning_rate=0.1, random_state=42
+                    n_estimators=100, 
+                    max_depth=6, 
+                    learning_rate=0.1, 
+                    random_state=42
                 ),
                 'priority': 2
             }
@@ -531,8 +543,12 @@ class MLModelManager:
         if XGBOOST_AVAILABLE:
             self.model_configs['xgboost'] = {
                 'model': XGBClassifier(
-                    n_estimators=100, max_depth=6, learning_rate=0.1,
-                    random_state=42, eval_metric='logloss'
+                    n_estimators=100, 
+                    max_depth=6, 
+                    learning_rate=0.1,
+                    random_state=42, 
+                    eval_metric='logloss',
+                    scale_pos_weight=1  # Will be updated dynamically
                 ),
                 'priority': 1
             }
@@ -540,8 +556,12 @@ class MLModelManager:
         if LIGHTGBM_AVAILABLE:
             self.model_configs['lightgbm'] = {
                 'model': LGBMClassifier(
-                    n_estimators=100, max_depth=6, learning_rate=0.1,
-                    random_state=42, verbose=-1
+                    n_estimators=100, 
+                    max_depth=6, 
+                    learning_rate=0.1,
+                    random_state=42, 
+                    verbose=-1,
+                    class_weight='balanced'  # Penalize minority class errors more
                 ),
                 'priority': 1
             }
@@ -560,8 +580,42 @@ class MLModelManager:
             X, y, test_size=0.25, random_state=42, stratify=y
         )
         
+        # Check class distribution
+        churn_rate = sum(y_train) / len(y_train)
+        logger.info(f"📊 Original training set:")
+        logger.info(f"   Churned (1): {sum(y_train)} ({churn_rate*100:.1f}%)")
+        logger.info(f"   Retained (0): {len(y_train)-sum(y_train)} ({(1-churn_rate)*100:.1f}%)")
+        
+        # Apply SMOTE if severe imbalance
+        if churn_rate < 0.15:  # If churners < 15%
+            logger.info("⚠️ Severe class imbalance detected! Applying SMOTE...")
+            try:
+                # Use fewer neighbors if we have very few positive samples
+                n_neighbors = min(5, sum(y_train) - 1)
+                if n_neighbors < 1:
+                    logger.warning("Not enough positive samples for SMOTE. Skipping...")
+                    X_train_balanced = X_train
+                    y_train_balanced = y_train
+                else:
+                    smote = SMOTE(random_state=42, k_neighbors=n_neighbors)
+                    X_train_balanced, y_train_balanced = smote.fit_resample(X_train, y_train)
+                    
+                    churn_rate_balanced = sum(y_train_balanced) / len(y_train_balanced)
+                    logger.info(f"✓ After SMOTE:")
+                    logger.info(f"   Churned (1): {sum(y_train_balanced)} ({churn_rate_balanced*100:.1f}%)")
+                    logger.info(f"   Retained (0): {len(y_train_balanced)-sum(y_train_balanced)} ({(1-churn_rate_balanced)*100:.1f}%)")
+            except Exception as e:
+                logger.warning(f"SMOTE failed: {e}. Using original data...")
+                X_train_balanced = X_train
+                y_train_balanced = y_train
+        else:
+            logger.info("✓ Class distribution is acceptable. No SMOTE needed.")
+            X_train_balanced = X_train
+            y_train_balanced = y_train
+        
+        # Scale features AFTER balancing
         self.scaler = StandardScaler()
-        X_train_scaled = self.scaler.fit_transform(X_train)
+        X_train_scaled = self.scaler.fit_transform(X_train_balanced)
         X_test_scaled = self.scaler.transform(X_test)
         
         results = []
@@ -572,7 +626,17 @@ class MLModelManager:
                 start_time = time.time()
                 
                 model = config['model']
-                model.fit(X_train_scaled, y_train)
+                
+                # For XGBoost, set scale_pos_weight dynamically based on actual class distribution
+                if name == 'xgboost' and XGBOOST_AVAILABLE:
+                    neg_count = len(y_train_balanced) - sum(y_train_balanced)
+                    pos_count = sum(y_train_balanced)
+                    if pos_count > 0:
+                        scale_weight = neg_count / pos_count
+                        model.set_params(scale_pos_weight=scale_weight)
+                        logger.info(f"   XGBoost scale_pos_weight: {scale_weight:.2f}")
+                
+                model.fit(X_train_scaled, y_train_balanced)
                 training_time = time.time() - start_time
                 
                 y_pred_proba = model.predict_proba(X_test_scaled)[:, 1]
