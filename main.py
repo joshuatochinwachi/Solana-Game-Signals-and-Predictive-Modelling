@@ -1345,20 +1345,22 @@ async def force_refresh_and_train(request: Request):
                 "message": "No date column found in data. Expected 'day' or 'activity_date'."
             }
 
-        # Handle user identifier column
-        if 'user_wallet' not in daily_activity.columns:
-            if 'gamer' in daily_activity.columns:
-                daily_activity['user_wallet'] = daily_activity['gamer']
-            elif 'wallet' in daily_activity.columns:
-                daily_activity['user_wallet'] = daily_activity['wallet']
-            elif 'user_address' in daily_activity.columns:
-                daily_activity['user_wallet'] = daily_activity['user_address']
-            else:
-                logger.error(f"No user identifier column found. Available columns: {list(daily_activity.columns)}")
-                return {
-                    "status": "error",
-                    "message": f"No user identifier column found. This query needs individual user data, not aggregated data. Available columns: {list(daily_activity.columns)}"
-                }
+        # Handle user identifier column - MORE FLEXIBLE
+        user_col_found = False
+        for possible_name in ['user_wallet', 'signer', 'tx_signer', 'wallet', 'gamer', 'user_address', 'address']:
+            if possible_name in daily_activity.columns:
+                if possible_name != 'user_wallet':
+                    daily_activity['user_wallet'] = daily_activity[possible_name]
+                    logger.info(f"✓ Mapped '{possible_name}' → 'user_wallet'")
+                user_col_found = True
+                break
+
+        if not user_col_found:
+            logger.error(f"❌ No user identifier column found. Available columns: {list(daily_activity.columns)}")
+            return {
+                "status": "error",
+                "message": f"No user identifier column found. Available columns: {list(daily_activity.columns)}"
+            }
 
         # Handle transaction count column - CRITICAL FIX
         if 'daily_transactions' not in daily_activity.columns:
