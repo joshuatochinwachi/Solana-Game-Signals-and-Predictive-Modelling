@@ -404,7 +404,7 @@ class FeatureService:
         # Get all user-game combinations
         for (user, project), group in daily_activity_df.groupby(['user_wallet', 'project']):
             # Only include users with enough history (at least 10 days of data)
-            if len(group) >= 10:
+            if len(group) >= 5:
                 features = self.create_user_features(group, lookback_days=45)
                 if features:
                     features['user_wallet'] = user
