@@ -1287,7 +1287,7 @@ async def force_refresh_and_train(request: Request):
         if daily_activity is None or daily_activity.empty:
             logger.warning("No user_daily_activity found, trying daily_gaming_activity")
             daily_activity = query_results.get('daily_gaming_activity')
-        
+
         if daily_activity is None or daily_activity.empty:
             return {
                 "status": "partial_success",
@@ -1295,13 +1295,16 @@ async def force_refresh_and_train(request: Request):
                 "data_refreshed": successful_queries,
                 "models_trained": 0
             }
-        
-        # Clean data
-        # Handle date column
+
+        logger.info(f"📊 Raw data columns: {list(daily_activity.columns)}")
+
+        # Clean data - Handle date column first
         if 'day' in daily_activity.columns:
             daily_activity['activity_date'] = pd.to_datetime(daily_activity['day'])
-        elif 'activity_date' not in daily_activity.columns:
-            logger.error("No date column found in data")
+        elif 'activity_date' in daily_activity.columns:
+            daily_activity['activity_date'] = pd.to_datetime(daily_activity['activity_date'])
+        else:
+            logger.error(f"No date column found. Available: {list(daily_activity.columns)}")
             return {
                 "status": "error",
                 "message": "No date column found in data. Expected 'day' or 'activity_date'."
@@ -1311,6 +1314,10 @@ async def force_refresh_and_train(request: Request):
         if 'user_wallet' not in daily_activity.columns:
             if 'gamer' in daily_activity.columns:
                 daily_activity['user_wallet'] = daily_activity['gamer']
+            elif 'wallet' in daily_activity.columns:
+                daily_activity['user_wallet'] = daily_activity['wallet']
+            elif 'user_address' in daily_activity.columns:
+                daily_activity['user_wallet'] = daily_activity['user_address']
             else:
                 logger.error(f"No user identifier column found. Available columns: {list(daily_activity.columns)}")
                 return {
@@ -1318,20 +1325,35 @@ async def force_refresh_and_train(request: Request):
                     "message": f"No user identifier column found. This query needs individual user data, not aggregated data. Available columns: {list(daily_activity.columns)}"
                 }
 
-        # Ensure we have the required columns
-        required_columns = ['activity_date', 'user_wallet', 'project']
+        # Handle transaction count column - CRITICAL FIX
+        if 'daily_transactions' not in daily_activity.columns:
+            if 'number_of_transactions' in daily_activity.columns:
+                daily_activity['daily_transactions'] = daily_activity['number_of_transactions']
+            elif 'transaction_count' in daily_activity.columns:
+                daily_activity['daily_transactions'] = daily_activity['transaction_count']
+            elif 'txn_count' in daily_activity.columns:
+                daily_activity['daily_transactions'] = daily_activity['txn_count']
+            else:
+                logger.warning(f"No transaction count column found. Using default value of 1. Available: {list(daily_activity.columns)}")
+                daily_activity['daily_transactions'] = 1
+
+        # Ensure required columns exist after normalization
+        required_columns = ['activity_date', 'user_wallet', 'project', 'daily_transactions']
         missing_columns = [col for col in required_columns if col not in daily_activity.columns]
 
         if missing_columns:
-            logger.error(f"Missing required columns: {missing_columns}")
+            logger.error(f"Missing required columns after normalization: {missing_columns}")
             return {
                 "status": "error",
-                "message": f"Missing required columns for ML training: {missing_columns}. Cannot train models without individual user-level data."
+                "message": f"Missing required columns for ML training: {missing_columns}. Available: {list(daily_activity.columns)}"
             }
-        
+
+        logger.info(f"✓ Normalized columns: {list(daily_activity.columns)}")
+
+        # Type conversions
         daily_activity['user_wallet'] = daily_activity['user_wallet'].astype(str)
         daily_activity['project'] = daily_activity['project'].astype(str)
-        daily_activity['daily_transactions'] = daily_activity.get('number_of_transactions', 1)
+        daily_activity['daily_transactions'] = pd.to_numeric(daily_activity['daily_transactions'], errors='coerce').fillna(1)
         
         # Create training dataset
         training_df = feature_service.create_training_dataset(daily_activity)
