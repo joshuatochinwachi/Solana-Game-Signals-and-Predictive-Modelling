@@ -830,6 +830,7 @@ async def root():
             },
             "utilities": {
                 "cache_status": "/api/cache/status",
+                "clear_cache": "/api/cache/clear",
                 "force_refresh": "/api/cache/refresh",
                 "health": "/api/health"
             }
