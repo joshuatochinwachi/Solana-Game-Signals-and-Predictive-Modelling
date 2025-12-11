@@ -268,13 +268,22 @@ class CacheManager:
                 
                 logger.info(f"Starting paginated fetch for query {query_id}...")
                 
+                # First, get the latest execution result to get execution_id
+                try:
+                    initial_result = self.dune_client.get_latest_result(query_id)
+                    execution_id = initial_result.execution_id
+                    logger.info(f"Got execution_id: {execution_id}")
+                except Exception as e:
+                    logger.error(f"Failed to get initial result: {e}")
+                    return pd.DataFrame()
+                
                 while True:
                     logger.info(f"  Fetching batch: offset={offset}, limit={limit}")
                     
                     try:
-                        # Fetch batch with limit and offset
+                        # Fetch batch using execution_id with limit and offset
                         result = self.dune_client.get_execution_results(
-                            query_id=query_id,
+                            execution_id=execution_id,
                             limit=limit,
                             offset=offset
                         )
@@ -283,15 +292,17 @@ class CacheManager:
                         batch_size = len(batch_df)
                         
                         if batch_size == 0:
-                            logger.info(f"  No more data. Total rows fetched: {sum(len(df) for df in all_data)}")
+                            total_rows = sum(len(df) for df in all_data)
+                            logger.info(f"  No more data. Total rows fetched: {total_rows}")
                             break
                         
                         all_data.append(batch_df)
-                        logger.info(f"  ✓ Fetched {batch_size} rows (total so far: {sum(len(df) for df in all_data)})")
+                        total_so_far = sum(len(df) for df in all_data)
+                        logger.info(f"  ✓ Fetched {batch_size} rows (total so far: {total_so_far})")
                         
                         # If batch is smaller than limit, we've reached the end
                         if batch_size < limit:
-                            logger.info(f"  Last batch received. Total rows: {sum(len(df) for df in all_data)}")
+                            logger.info(f"  Last batch received. Total rows: {total_so_far}")
                             break
                         
                         offset += limit
@@ -305,7 +316,8 @@ class CacheManager:
                             # Reduce limit and retry
                             limit = limit // 2
                             if limit < 1000:
-                                logger.error(f"  Batch size too small. Collected {len(all_data)} batches so far.")
+                                total_rows = sum(len(df) for df in all_data)
+                                logger.error(f"  Batch size too small. Collected {total_rows} rows so far.")
                                 break
                             continue
                         else:
