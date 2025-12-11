@@ -33,10 +33,12 @@ This platform provides real-time analytics and ML-powered churn prediction for t
 ### 1.2 Key Capabilities
 
 - **Real-Time Analytics**: 11 behavioral metrics tracked across 60M+ transactions
-- **Predictive ML**: 5-model ensemble predicting churn with >85% ROC-AUC
+- **Predictive ML**: 5-model ensemble predicting churn with ~85-90% ROC-AUC (varies with each training run)
 - **Self-Training Pipeline**: Automated retraining when fresh data arrives
 - **Production API**: 21 REST endpoints with sub-100ms cached responses
 - **Adaptive Classification**: Dynamic risk thresholds that adjust to population health
+
+**Note on Metrics:** All performance metrics cited throughout this document are typical ranges based on historical training runs. Actual values update automatically as models retrain on fresh blockchain data. Check `/api/ml/models/leaderboard` for current live metrics.
 
 ### 1.3 Target Users
 
@@ -310,7 +312,7 @@ def validate_dataframe(df: pd.DataFrame, query_name: str) -> bool:
 
 ### 4.1 Overview
 
-We extract **10 behavioral features** per user-game pair to predict churn. These features capture:
+I extracted **10 core behavioral features** per user-game pair (plus 3 metadata fields: `user_wallet`, `project`, `will_churn`), totaling 13 columns in the training dataset. These features capture:
 
 - **Recency**: How recently did the user engage?
 - **Frequency**: How often do they play?
@@ -1177,7 +1179,7 @@ QUERY_ID_USER_DAILY_ACTIVITY=6273417
 
 **Environment Variables:**
 ```bash
-VITE_API_BASE_URL=https://your-api.railway.app
+VITE_API_BASE_URL=https://solana-game-signals-and-predictive-modelling-production.up.railway.app
 ```
 
 **Deployment Settings:**
@@ -1398,7 +1400,7 @@ jobs:
     steps:
       - name: Trigger Refresh
         run: |
-          curl -X POST https://your-api.railway.app/api/cache/refresh \
+          curl -X POST https://solana-game-signals-and-predictive-modelling-production.up.railway.app/api/cache/refresh \
             -H "X-API-Secret: ${{ secrets.FASTAPI_SECRET }}"
 ```
 
@@ -1441,7 +1443,7 @@ This was caused by incorrect prediction semantics in earlier versions. The syste
 **Verification:**
 ```bash
 # Check current risk distribution
-curl https://your-api.railway.app/api/ml/predictions/churn | jq '.summary'
+curl https://solana-game-signals-and-predictive-modelling-production.up.railway.app/api/ml/predictions/churn | jq '.summary'
 
 # Should see balanced distribution:
 # {
@@ -1482,7 +1484,7 @@ cutoff_date = user_data['activity_date'].max() - pd.Timedelta(days=30)
 rm -rf backend/raw_data_cache/*.joblib
 
 # Trigger fresh data fetch
-curl -X POST https://your-api.railway.app/api/cache/refresh \
+curl -X POST https://solana-game-signals-and-predictive-modelling-production.up.railway.app/api/cache/refresh \
   -H "X-API-Secret: your_secret"
 ```
 
@@ -1513,17 +1515,17 @@ curl -X POST https://your-api.railway.app/api/cache/refresh \
 
 #### Check Model Metrics
 ```bash
-curl https://your-api.railway.app/api/ml/models/leaderboard
+curl https://solana-game-signals-and-predictive-modelling-production.up.railway.app/api/ml/models/leaderboard
 ```
 
 #### Inspect Cache Status
 ```bash
-curl https://your-api.railway.app/api/cache/status
+curl https://solana-game-signals-and-predictive-modelling-production.up.railway.app/api/cache/status
 ```
 
 #### View Raw Data Sample
 ```bash
-curl https://your-api.railway.app/api/analytics/user-daily-activity | jq '.data[0:5]'
+curl https://solana-game-signals-and-predictive-modelling-production.up.railway.app/api/analytics/user-daily-activity | jq '.data[0:5]'
 ```
 
 #### Monitor Logs (Railway)
@@ -1595,6 +1597,10 @@ railway logs --follow
 
 ### 12.1 Feature Importance
 
+**Note:** These rankings are based on typical Random Forest models. Actual feature importance varies with each training run. Query `/api/ml/models/info` for current feature importance from the live champion model.
+
+**Typical Rankings (Most to Least Predictive):**
+
 Based on typical Random Forest champion model:
 
 | Rank | Feature | Importance | Interpretation |
@@ -1613,6 +1619,8 @@ Based on typical Random Forest champion model:
 **Key Insight**: Recency dominates all other features. A user's last activity date is 3x more predictive than any other metric.
 
 ### 12.2 Model Comparison
+
+**Note:** Metrics shown are **typical ranges** based on historical training runs. Actual performance varies with each data refresh as player behavior evolves. For current live metrics, query `/api/ml/models/leaderboard`.
 
 Typical performance across 5 algorithms:
 
@@ -1908,7 +1916,7 @@ open htmlcov/index.html
 **Resources:**
 - GitHub: [github.com/joshuatochinwachi/Solana-Game-Signals-and-Predictive-Modelling](https://github.com/joshuatochinwachi/Solana-Game-Signals-and-Predictive-Modelling)
 - Live Dashboard: [solana-games.app](https://solana-games.app)
-- API Docs: [your-api.railway.app/docs](https://your-api.railway.app/docs)
+- API Docs: [solana-game-signals-and-predictive-modelling-production.up.railway.app/docs](https://solana-game-signals-and-predictive-modelling-production.up.railway.app/docs)
 - Dune Dashboard: [dune.com/defi__josh/solana-games](https://dune.com/defi__josh/solana-games)
 
 **Support:**
