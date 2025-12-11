@@ -1280,6 +1280,20 @@ async def force_refresh_and_train(request: Request):
                 query_results[query_name] = pd.DataFrame()
         
         successful_queries = sum(1 for df in query_results.values() if not df.empty)
+
+        logger.info("=" * 60)
+        logger.info("DEBUG: Checking user_daily_activity data structure")
+        if 'user_daily_activity' in query_results:
+            uda = query_results['user_daily_activity']
+            logger.info(f"📊 Data fetched: {len(uda)} rows")
+            logger.info(f"📊 Columns received: {list(uda.columns)}")
+            logger.info(f"📊 Data types: {uda.dtypes.to_dict()}")
+            if len(uda) > 0:
+                logger.info(f"📊 First 3 rows sample:")
+                logger.info(f"{uda.head(3).to_string()}")
+        else:
+            logger.warning("❌ user_daily_activity NOT in query_results!")
+        logger.info("=" * 60)
         
         # Step 2: Prepare ML data
         logger.info("Step 2: Preparing ML training data...")
