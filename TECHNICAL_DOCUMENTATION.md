@@ -356,8 +356,8 @@ def create_target_label(user_data: pd.DataFrame, cutoff_date: pd.Timestamp) -> i
 
 | Feature | Formula | Range | Interpretation |
 |---------|---------|-------|----------------|
-| `active_days_last_7` | Count of distinct days with activity in last 7 days | 0-7 | Recent engagement level |
-| `transactions_last_7` | Sum of transactions in last 7 days | 0-∞ | Recent engagement intensity |
+| `active_days_last_8` | Count of distinct days with activity in last 8 days | 0-8 | Recent engagement level |
+| `transactions_last_8` | Sum of transactions in last 8 days | 0-∞ | Recent engagement intensity |
 | `total_active_days` | Count of distinct days with activity (all time) | 1-60 | User tenure/experience |
 | `total_transactions` | Sum of all transactions (all time) | 1-∞ | Lifetime value proxy |
 | `avg_transactions_per_day` | `total_transactions / total_active_days` | 0-∞ | Average engagement rate |
@@ -1606,14 +1606,14 @@ Based on typical Random Forest champion model:
 | Rank | Feature | Importance | Interpretation |
 |------|---------|------------|----------------|
 | 1 | `days_since_last_activity` | 0.28 | Most predictive: recent absence = churn |
-| 2 | `active_days_last_7` | 0.19 | Recent engagement critical |
-| 3 | `transactions_last_7` | 0.15 | Activity intensity matters |
+| 2 | `active_days_last_8` | 0.19 | Recent engagement critical |
+| 3 | `transactions_last_8` | 0.15 | Activity intensity matters |
 | 4 | `early_to_late_momentum` | 0.12 | Declining trend = risk |
 | 5 | `consistency_score` | 0.09 | Regular players less likely to churn |
 | 6 | `total_active_days` | 0.07 | Tenure provides some protection |
 | 7 | `avg_transactions_per_day` | 0.05 | Baseline engagement level |
 | 8 | `week1_transactions` | 0.03 | Onboarding success weak signal |
-| 9 | `week_last_transactions` | 0.02 | Captured by active_days_last_7 |
+| 9 | `week_last_transactions` | 0.02 | Captured by active_days_last_8 |
 | 10 | `total_transactions` | 0.01 | Lifetime value less predictive |
 
 **Key Insight**: Recency dominates all other features. A user's last activity date is 3x more predictive than any other metric.
