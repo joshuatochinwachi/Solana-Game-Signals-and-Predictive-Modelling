@@ -1191,6 +1191,58 @@ async def get_cache_status():
     except Exception as e:
         logger.error(f"Error getting cache status: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+    
+@app.post("/api/cache/clear")
+async def clear_cache(request: Request):
+    """Clear all cached data and models"""
+    if config.api_secret:
+        provided_secret = request.headers.get("X-API-Secret")
+        if provided_secret != config.api_secret:
+            raise HTTPException(status_code=401, detail="Unauthorized")
+    
+    try:
+        import shutil
+        
+        # Clear data cache
+        if os.path.exists(cache_manager.cache_dir):
+            shutil.rmtree(cache_manager.cache_dir)
+            os.makedirs(cache_manager.cache_dir)
+            logger.info("✓ Cleared data cache")
+        
+        # Clear ML models
+        if os.path.exists(ml_manager.models_dir):
+            shutil.rmtree(ml_manager.models_dir)
+            os.makedirs(ml_manager.models_dir)
+            logger.info("✓ Cleared ML models")
+        
+        # Reset metadata
+        cache_manager.metadata = {}
+        cache_manager._save_metadata()
+        
+        # Reset ML manager state
+        ml_manager.champion = None
+        ml_manager.top_3_ensemble = []
+        ml_manager.all_models = []
+        ml_manager.scaler = None
+        
+        logger.info("=" * 60)
+        logger.info("CACHE AND MODELS CLEARED SUCCESSFULLY")
+        logger.info("=" * 60)
+        
+        return {
+            "status": "success",
+            "message": "All cache and models cleared successfully",
+            "timestamp": datetime.now().isoformat(),
+            "cleared": {
+                "data_cache": True,
+                "ml_models": True,
+                "metadata": True
+            }
+        }
+        
+    except Exception as e:
+        logger.error(f"Error clearing cache: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/api/cache/refresh")
 async def force_refresh_and_train(request: Request):
