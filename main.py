@@ -111,6 +111,16 @@ class Config:
             'daily_gaming_activity': int(os.getenv('QUERY_ID_DAILY_GAMING_ACTIVITY', 6255551)),
             'user_daily_activity': int(os.getenv('QUERY_ID_USER_DAILY_ACTIVITY', 6273417))
         }
+
+        # Paginated user daily activity queries (6 pages × 30k rows)
+        self.user_activity_pages = {
+            'page_1': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_1', 6342025)),   # 0-30k
+            'page_2': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_2', 6342053)),   # 30k-60k
+            'page_3': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_3', 6342058)),   # 60k-90k
+            'page_4': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_4', 6342064)),   # 90k-120k
+            'page_5': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_5', 6342075)),   # 120k-150k
+            'page_6': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_6', 6342083)),   # 150k-180k
+        }
         
         self.cache_duration = int(os.getenv('CACHE_DURATION', 259200)) # 72 hours
         self.min_training_samples = int(os.getenv('MIN_TRAINING_SAMPLES', 100))
@@ -319,6 +329,71 @@ class CacheManager:
             next_refresh=next_refresh,
             row_count=row_count
         )
+    
+    async def fetch_user_daily_activity_paginated(self) -> pd.DataFrame:
+        """
+        Fetch user daily activity from 6 paginated queries and merge them
+        Returns combined dataframe with all ~155k rows
+        """
+        logger.info("=" * 60)
+        logger.info("FETCHING USER ACTIVITY (PAGINATED)")
+        logger.info("=" * 60)
+        
+        all_pages = []
+        total_rows = 0
+        
+        for page_name, query_id in config.user_activity_pages.items():
+            try:
+                cache_key = f'user_activity_{page_name}'
+                logger.info(f"📄 Fetching {page_name} (Query {query_id})...")
+                
+                # Create a temporary config entry for this page
+                original_queries = config.dune_queries.copy()
+                config.dune_queries[cache_key] = query_id
+                
+                # Fetch using existing method (with caching)
+                df = await self.fetch_dune_raw(cache_key)
+                
+                # Restore original queries
+                config.dune_queries = original_queries
+                
+                if not df.empty:
+                    all_pages.append(df)
+                    total_rows += len(df)
+                    logger.info(f"  ✓ {page_name}: {len(df):,} rows (Total: {total_rows:,})")
+                else:
+                    logger.warning(f"  ⚠️ {page_name}: No data returned")
+                    
+            except Exception as e:
+                logger.error(f"  ✗ {page_name} failed: {e}")
+                # Continue fetching other pages even if one fails
+                continue
+        
+        if not all_pages:
+            logger.error("❌ Failed to fetch ANY pages!")
+            return pd.DataFrame()
+        
+        # Merge all pages
+        logger.info("🔄 Merging all pages...")
+        merged_df = pd.concat(all_pages, ignore_index=True)
+        
+        # Check for duplicates
+        before_dedup = len(merged_df)
+        merged_df = merged_df.drop_duplicates(subset=['day', 'user_wallet', 'project'])
+        after_dedup = len(merged_df)
+        
+        duplicates_removed = before_dedup - after_dedup
+        if duplicates_removed > 0:
+            logger.warning(f"⚠️ Removed {duplicates_removed:,} duplicate rows")
+        
+        logger.info("=" * 60)
+        logger.info(f"✓ MERGE COMPLETE")
+        logger.info(f"  Pages fetched: {len(all_pages)}/6")
+        logger.info(f"  Total rows: {len(merged_df):,}")
+        logger.info(f"  Duplicates removed: {duplicates_removed:,}")
+        logger.info("=" * 60)
+        
+        return merged_df
 
 # ==================== FEATURE ENGINEERING ====================
 
@@ -976,13 +1051,21 @@ async def get_daily_gaming_activity():
 
 @app.get("/api/analytics/user-daily-activity")
 async def get_user_daily_activity():
-    df = await cache_manager.fetch_dune_raw('user_daily_activity')
-    df = clean_dataframe_for_json(df)  
-    metadata = cache_manager.get_metadata_for_key(
-        'user_daily_activity',
-        'Dune Analytics',
-        config.dune_queries['user_daily_activity']
+    # Fetch from paginated queries instead of single query
+    df = await cache_manager.fetch_user_daily_activity_paginated()
+    df = clean_dataframe_for_json(df)
+    
+    # Create metadata for the merged result
+    metadata = DataMetadata(
+        source='Dune Analytics (Paginated)',
+        query_id=None,  # Multiple queries
+        last_updated=datetime.now().isoformat(),
+        cache_age_hours=0,
+        is_fresh=True,
+        next_refresh=(datetime.now() + timedelta(hours=72)).isoformat(),
+        row_count=len(df)
     )
+    
     return {"metadata": metadata.dict(), "data": df.to_dict('records')}
 
 # ==================== ML PREDICTION ENDPOINTS ====================
@@ -1318,15 +1401,22 @@ async def force_refresh_and_train(request: Request):
         
         # Step 2: Prepare ML data
         logger.info("Step 2: Preparing ML training data...")
-        daily_activity = query_results.get('user_daily_activity')
+
+        # Fetch paginated user activity data
+        logger.info("Fetching paginated user daily activity...")
+        daily_activity = await cache_manager.fetch_user_daily_activity_paginated()
+
+        # Fallback to old queries if paginated fetch fails
         if daily_activity is None or daily_activity.empty:
-            logger.warning("No user_daily_activity found, trying daily_gaming_activity")
-            daily_activity = query_results.get('daily_gaming_activity')
+            logger.warning("Paginated fetch failed, trying fallback queries...")
+            daily_activity = query_results.get('user_daily_activity')
+            if daily_activity is None or daily_activity.empty:
+                daily_activity = query_results.get('daily_gaming_activity')
 
         if daily_activity is None or daily_activity.empty:
             return {
                 "status": "partial_success",
-                "message": "Data refreshed but ML training skipped",
+                "message": "Data refreshed but ML training skipped - no user activity data available",
                 "data_refreshed": successful_queries,
                 "models_trained": 0
             }
