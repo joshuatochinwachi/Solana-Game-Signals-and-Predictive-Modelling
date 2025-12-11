@@ -247,7 +247,7 @@ class CacheManager:
             logger.error(f"Cache write error for {key}: {e}")
     
     async def fetch_dune_raw(self, query_key: str) -> pd.DataFrame:
-        """Fetch data from Dune with automatic pagination for large results"""
+        """Fetch data from Dune - automatic pagination handled by Dune client"""
         cached = self.get_cached_data(query_key)
         if cached is not None:
             logger.info(f"Using cached data for {query_key}")
@@ -260,80 +260,33 @@ class CacheManager:
         try:
             logger.info(f"Fetching fresh data for {query_key}...")
             
-            def fetch_with_pagination():
+            def fetch_with_auto_pagination():
+                from dune_client.query import QueryBase
+                
                 query_id = config.dune_queries[query_key]
-                all_data = []
-                offset = 0
-                limit = 25000  # Dune's recommended batch size
+                logger.info(f"Fetching query {query_id} with automatic pagination...")
                 
-                logger.info(f"Starting paginated fetch for query {query_id}...")
-                
-                # First, get the latest execution result to get execution_id
                 try:
-                    initial_result = self.dune_client.get_latest_result(query_id)
-                    execution_id = initial_result.execution_id
-                    logger.info(f"Got execution_id: {execution_id}")
-                except Exception as e:
-                    logger.error(f"Failed to get initial result: {e}")
-                    return pd.DataFrame()
-                
-                while True:
-                    logger.info(f"  Fetching batch: offset={offset}, limit={limit}")
+                    # Option 1: Use get_latest_result_dataframe - handles pagination automatically!
+                    df = self.dune_client.get_latest_result_dataframe(
+                        query=QueryBase(query_id=query_id)
+                    )
                     
-                    try:
-                        # Fetch batch using execution_id with limit and offset
-                        result = self.dune_client.get_execution_results(
-                            execution_id=execution_id,
-                            limit=limit,
-                            offset=offset
-                        )
-                        
-                        batch_df = pd.DataFrame(result.result.rows)
-                        batch_size = len(batch_df)
-                        
-                        if batch_size == 0:
-                            total_rows = sum(len(df) for df in all_data)
-                            logger.info(f"  No more data. Total rows fetched: {total_rows}")
-                            break
-                        
-                        all_data.append(batch_df)
-                        total_so_far = sum(len(df) for df in all_data)
-                        logger.info(f"  ✓ Fetched {batch_size} rows (total so far: {total_so_far})")
-                        
-                        # If batch is smaller than limit, we've reached the end
-                        if batch_size < limit:
-                            logger.info(f"  Last batch received. Total rows: {total_so_far}")
-                            break
-                        
-                        offset += limit
-                        
-                        # Add small delay to avoid rate limiting
-                        time.sleep(0.5)
-                        
-                    except Exception as e:
-                        if "datapoint limit" in str(e).lower():
-                            logger.warning(f"  Datapoint limit hit at offset {offset}. Adjusting batch size...")
-                            # Reduce limit and retry
-                            limit = limit // 2
-                            if limit < 1000:
-                                total_rows = sum(len(df) for df in all_data)
-                                logger.error(f"  Batch size too small. Collected {total_rows} rows so far.")
-                                break
-                            continue
-                        else:
-                            raise e
-                
-                # Combine all batches
-                if all_data:
-                    combined_df = pd.concat(all_data, ignore_index=True)
-                    logger.info(f"✓ Successfully fetched {len(combined_df)} rows for {query_key}")
-                    return combined_df
-                else:
-                    logger.warning(f"No data fetched for {query_key}")
-                    return pd.DataFrame()
+                    logger.info(f"✓ Successfully fetched {len(df)} rows for {query_key}")
+                    return df
+                    
+                except Exception as e:
+                    logger.error(f"Failed to fetch with automatic pagination: {e}")
+                    
+                    # Fallback: Try the old method for compatibility
+                    logger.info("Trying fallback method...")
+                    result = self.dune_client.get_latest_result(query_id)
+                    df = pd.DataFrame(result.result.rows)
+                    logger.info(f"✓ Fetched {len(df)} rows using fallback method")
+                    return df
             
             loop = asyncio.get_event_loop()
-            df = await loop.run_in_executor(None, fetch_with_pagination)
+            df = await loop.run_in_executor(None, fetch_with_auto_pagination)
             
             self.cache_data(query_key, df)
             return df
