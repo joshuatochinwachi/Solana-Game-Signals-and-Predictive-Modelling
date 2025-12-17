@@ -293,7 +293,7 @@ export const HighRiskUsersFeature: React.FC = () => {
                     </button>
                 </div>
                 <p className="text-sm text-text-secondary mb-6">
-                    These users exhibit high churn probability based on recent activity patterns. Immediate action is recommended.
+                    These top {highRiskUsers.length} by risk users exhibit high churn probability based on recent activity patterns. Immediate action is recommended.
                 </p>
 
                 <CompleteDataTable
