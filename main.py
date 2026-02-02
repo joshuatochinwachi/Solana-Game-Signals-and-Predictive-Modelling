@@ -120,9 +120,10 @@ class Config:
             'page_4': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_4', 6342064)),   # 90k-120k
             'page_5': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_5', 6342075)),   # 120k-150k
             'page_6': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_6', 6342083)),   # 150k-180k
+            'page_7': int(os.getenv('QUERY_ID_USER_ACTIVITY_PAGE_7', 6636418)),   # 180k-210k
         }
         
-        self.cache_duration = int(os.getenv('CACHE_DURATION', 259200)) # 72 hours
+        self.cache_duration = int(os.getenv('CACHE_DURATION', 604800)) # 7 days
         self.min_training_samples = int(os.getenv('MIN_TRAINING_SAMPLES', 100))
         self.prediction_window_days = int(os.getenv('PREDICTION_WINDOW_DAYS', 14))
         self.api_secret = os.getenv('FASTAPI_SECRET', '')
@@ -388,7 +389,7 @@ class CacheManager:
         
         logger.info("=" * 60)
         logger.info(f"✓ MERGE COMPLETE")
-        logger.info(f"  Pages fetched: {len(all_pages)}/6")
+        logger.info(f"  Pages fetched: {len(all_pages)}/7")
         logger.info(f"  Total rows: {len(merged_df):,}")
         logger.info(f"  Duplicates removed: {duplicates_removed:,}")
         logger.info("=" * 60)
@@ -1062,7 +1063,7 @@ async def get_user_daily_activity():
         last_updated=datetime.now().isoformat(),
         cache_age_hours=0,
         is_fresh=True,
-        next_refresh=(datetime.now() + timedelta(hours=72)).isoformat(),
+        next_refresh=(datetime.now() + timedelta(hours=168)).isoformat(),
         row_count=len(df)
     )
     

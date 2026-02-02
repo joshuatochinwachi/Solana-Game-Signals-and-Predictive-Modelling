@@ -87,7 +87,7 @@ This platform provides real-time analytics and ML-powered churn prediction for t
 │                 FASTAPI BACKEND (Railway)                        │
 │  ┌──────────────────────────────────────────────────────────┐  │
 │  │  Cache Manager                                            │  │
-│  │  - 72-hour TTL with metadata tracking                    │  │
+│  │  - 168-hour TTL with metadata tracking                    │  │
 │  │  - Atomic refresh mechanism                              │  │
 │  │  - joblib serialization for DataFrames                   │  │
 │  └──────────────────────────────────────────────────────────┘  │
@@ -147,7 +147,7 @@ This platform provides real-time analytics and ML-powered churn prediction for t
 
 1. **Blockchain → Dune**: Solana transactions indexed by Dune Analytics
 2. **Dune → Backend**: FastAPI fetches via Dune SDK (CSV format)
-3. **Backend Caching**: Results stored locally (72-hour TTL)
+3. **Backend Caching**: Results stored locally (168-hour TTL)
 4. **Feature Engineering**: Raw data transformed into ML features
 5. **Model Training**: 5 algorithms trained on features
 6. **Prediction Generation**: Churn probabilities calculated for all users
@@ -179,7 +179,7 @@ class DuneQueryExecutor:
         df = pd.DataFrame(result.rows)
         
         # 4. Cache with metadata
-        cache_manager.set(f"query_{query_id}", df, ttl=72_hours)
+        cache_manager.set(f"query_{query_id}", df, ttl=168_hours)
         
         return df
 ```
@@ -228,9 +228,9 @@ WHERE activation_week >= CURRENT_DATE - INTERVAL '12 weeks';
 
 ```python
 class CacheManager:
-    def __init__(self, cache_dir: str, ttl_seconds: int = 259200):
+    def __init__(self, cache_dir: str, ttl_seconds: int = 604800):
         self.cache_dir = Path(cache_dir)
-        self.ttl = ttl_seconds  # 72 hours default
+        self.ttl = ttl_seconds  # 168 hours default
         self.metadata_file = self.cache_dir / "cache_metadata.json"
     
     def is_expired(self, cache_key: str) -> bool:
@@ -270,7 +270,7 @@ class CacheManager:
 
 Three triggers for cache refresh:
 
-1. **Time-based**: Automatic expiry after 72 hours
+1. **Time-based**: Automatic expiry after 168 hours
 2. **Manual**: `POST /api/cache/refresh` endpoint
 3. **Data-driven**: If Dune returns significantly different row counts
 
@@ -1139,7 +1139,7 @@ DEFI_JOSH_DUNE_QUERY_API_KEY_1=<key>
 FASTAPI_SECRET=<secret>
 
 # Optional
-CACHE_DURATION=259200  # 72 hours
+CACHE_DURATION=604800  # 168 hours (7 days)
 MIN_TRAINING_SAMPLES=100
 PREDICTION_WINDOW_DAYS=14
 
@@ -1237,7 +1237,7 @@ jobs:
 ### 8.1 Backend Optimizations
 
 #### Caching Strategy
-- **72-hour TTL**: Balance between freshness and API call reduction
+- **168-hour TTL**: Balance between freshness and API call reduction
 - **joblib serialization**: Efficient DataFrame storage
 - **Atomic writes**: Prevent corrupted cache
 - **Metadata tracking**: Monitor cache age and quality
@@ -1694,7 +1694,7 @@ Based on Railway deployment (512MB RAM):
 ### 12.6 Data Retention & Privacy
 
 **Data Retention:**
-- Raw cache: 72 hours (configurable)
+- Raw cache: 168 hours (configurable)
 - Model files: Persistent until next training
 - Logs: 30 days (rotated)
 - Predictions: Regenerated on each refresh

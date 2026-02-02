@@ -213,7 +213,7 @@ export const ModelInfoFeature: React.FC = () => {
                         },
                         {
                             label: 'Update Frequency',
-                            value: modelInfo?.update_frequency || 'Auto-synchronizes every 72 hours'
+                            value: modelInfo?.update_frequency || 'Auto-synchronizes every week'
                         },
                         {
                             label: 'Model Accuracy',
