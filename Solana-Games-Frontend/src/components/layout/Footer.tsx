@@ -64,15 +64,7 @@ export const Footer: React.FC = () => {
             <div className="flex items-center gap-2">
                 <span className="text-text-secondary">Built with</span>
                 <span className="text-red-500 animate-pulse">❤️</span>
-                <span className="text-text-secondary">by</span>
-                <a
-                    href="https://github.com/joshuatochinwachi"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-solana-purple hover:text-solana-cyan transition-colors font-bold font-gaming"
-                >
-                    Josh
-                </a>
+                <span className="text-text-secondary">for Solana Gaming</span>
             </div>
 
             <div className="font-mono text-text-secondary text-xs">
