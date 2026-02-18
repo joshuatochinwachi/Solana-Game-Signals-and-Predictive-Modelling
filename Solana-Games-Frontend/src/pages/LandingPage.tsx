@@ -78,26 +78,26 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* HUD Corners */}
-            <div className="fixed inset-0 z-40 pointer-events-none p-8">
-                <div className="absolute top-8 left-8 w-16 h-16 border-t-2 border-l-2 border-solana-green/50 rounded-tl-lg" />
-                <div className="absolute top-8 right-8 w-16 h-16 border-t-2 border-r-2 border-solana-green/50 rounded-tr-lg" />
-                <div className="absolute bottom-8 left-8 w-16 h-16 border-b-2 border-l-2 border-solana-green/50 rounded-bl-lg" />
-                <div className="absolute bottom-8 right-8 w-16 h-16 border-b-2 border-r-2 border-solana-green/50 rounded-br-lg" />
+            <div className="fixed inset-0 z-40 pointer-events-none p-4 md:p-8">
+                <div className="absolute top-4 md:top-8 left-4 md:left-8 w-8 md:w-16 h-8 md:h-16 border-t-2 border-l-2 border-solana-green/50 rounded-tl-lg" />
+                <div className="absolute top-4 md:top-8 right-4 md:right-8 w-8 md:w-16 h-8 md:h-16 border-t-2 border-r-2 border-solana-green/50 rounded-tr-lg" />
+                <div className="absolute bottom-4 md:bottom-8 left-4 md:left-8 w-8 md:w-16 h-8 md:h-16 border-b-2 border-l-2 border-solana-green/50 rounded-bl-lg" />
+                <div className="absolute bottom-4 md:bottom-8 right-4 md:right-8 w-8 md:w-16 h-8 md:h-16 border-b-2 border-r-2 border-solana-green/50 rounded-br-lg" />
 
-                {/* System Status Indicators */}
-                <div className="absolute top-8 left-32 flex items-center gap-4 text-xs text-solana-green/70 font-bold tracking-widest">
+                {/* System Status Indicators - Hide on very narrow or short screens to prevent overlap */}
+                <div className="absolute top-6 md:top-8 left-16 md:left-32 hidden lg:flex items-center gap-4 text-[10px] md:text-xs text-solana-green/70 font-bold tracking-widest">
                     <div className="flex items-center gap-2">
-                        <Wifi className="w-4 h-4 animate-pulse" /> NET: ONLINE
+                        <Wifi className="w-3 md:w-4 h-3 md:h-4 animate-pulse" /> NET: ONLINE
                     </div>
                     <div className="flex items-center gap-2">
-                        <Battery className="w-4 h-4" /> PWR: 100%
+                        <Battery className="w-3 md:w-4 h-3 md:h-4" /> PWR: 100%
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="hidden md:flex items-center gap-2">
                         <Crosshair className="w-4 h-4 animate-spin-slow" /> TARGET: LOCKED
                     </div>
                 </div>
 
-                <div className="absolute top-8 right-32 text-xs text-solana-purple/70 font-bold tracking-widest animate-pulse">
+                <div className="absolute top-6 md:top-8 right-16 md:right-32 hidden sm:block text-[10px] md:text-xs text-solana-purple/70 font-bold tracking-widest animate-pulse">
                     ENCRYPTION: SOLANA-256
                 </div>
             </div>
@@ -121,7 +121,7 @@ export const LandingPage: React.FC = () => {
             </div>
 
             {/* Content Container */}
-            <div className="relative z-10 container mx-auto px-6 h-screen flex flex-col justify-center items-center">
+            <div className="relative z-10 container mx-auto px-6 min-h-screen py-24 md:py-32 flex flex-col justify-center items-center">
 
                 {/* Main Title with Glitch Effect */}
                 <motion.div
@@ -142,13 +142,13 @@ export const LandingPage: React.FC = () => {
                         <Brain className="w-3 h-3" /> POWERED BY PREDICTIVE AI/ML
                     </motion.div>
 
-                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter mb-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 drop-shadow-[0_0_15px_rgba(20,241,149,0.5)] relative group cursor-default">
+                    <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter mb-2 text-transparent bg-clip-text bg-gradient-to-b from-white to-white/50 drop-shadow-[0_0_15px_rgba(20,241,149,0.5)] relative group cursor-default">
                         <span className="absolute inset-0 text-solana-green/30 blur-sm translate-x-[2px] group-hover:translate-x-[-4px] transition-transform duration-75">SOLANA</span>
                         <span className="absolute inset-0 text-solana-purple/30 blur-sm -translate-x-[2px] group-hover:translate-x-[4px] transition-transform duration-75">SOLANA</span>
                         SOLANA
                     </h1>
 
-                    <h2 className="text-3xl md:text-5xl font-black tracking-widest text-solana-green mb-6 uppercase drop-shadow-[0_0_10px_rgba(20,241,149,0.8)]">
+                    <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-widest text-solana-green mb-6 uppercase drop-shadow-[0_0_10px_rgba(20,241,149,0.8)]">
                         GAME ANALYTICS
                     </h2>
 
@@ -188,11 +188,11 @@ export const LandingPage: React.FC = () => {
                                 scale: { duration: 0.5, repeat: Infinity, repeatType: "reverse", ease: "easeInOut" }
                             }}
                             onClick={handleEnter}
-                            className="group relative px-20 py-6 bg-black overflow-hidden clip-path-polygon border-2 border-solana-green text-solana-green font-black text-2xl tracking-widest uppercase transition-all duration-300 hover:bg-solana-green hover:text-black cursor-pointer z-50"
+                            className="group relative px-10 md:px-20 py-4 md:py-6 bg-black overflow-hidden clip-path-polygon border-2 border-solana-green text-solana-green font-black text-xl md:text-2xl tracking-widest uppercase transition-all duration-300 hover:bg-solana-green hover:text-black cursor-pointer z-50 w-full max-w-sm md:max-w-none"
                             style={{ clipPath: "polygon(10% 0, 100% 0, 100% 70%, 90% 100%, 0 100%, 0 30%)" }}
                         >
-                            <span className="relative z-10 flex items-center gap-4">
-                                <Zap className="w-6 h-6 animate-pulse" /> INITIALIZE SYSTEM <Zap className="w-6 h-6 animate-pulse" />
+                            <span className="relative z-10 flex items-center justify-center gap-4">
+                                <Zap className="w-5 h-5 md:w-6 md:h-6 animate-pulse" /> INITIALIZE SYSTEM <Zap className="w-5 h-5 md:w-6 md:h-6 animate-pulse" />
                             </span>
                         </motion.button>
                         <motion.div

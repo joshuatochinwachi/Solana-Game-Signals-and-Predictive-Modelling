@@ -5,11 +5,14 @@ export const Methodology: React.FC = () => {
     return (
         <div className="space-y-4 mb-8">
             {/* Main Data Scope Notice */}
-            <div className="bg-gradient-to-r from-solana-purple/10 via-solana-cyan/10 to-solana-purple/10 border border-solana-purple/30 rounded-xl p-4 backdrop-blur-sm">
-                <div className="flex items-start gap-3">
+            <div className="bg-gradient-to-r from-solana-purple/10 via-solana-cyan/10 to-solana-purple/10 border border-solana-purple/30 rounded-xl p-4 md:p-6 backdrop-blur-sm">
+                <div className="flex flex-col sm:flex-row items-start gap-3">
                     <Info className="w-5 h-5 text-solana-cyan mt-0.5 flex-shrink-0" />
                     <div>
-                        <h4 className="font-bold text-white mb-1">📊 Data Scope & Methodology</h4>
+                        <h4 className="font-bold text-white mb-2 md:mb-1 flex items-center gap-2">
+                            <span className="md:hidden">📊</span>
+                            Data Scope & Methodology
+                        </h4>
                         <p className="text-sm text-text-secondary leading-relaxed">
                             All metrics and analytics displayed on this dashboard represent data from the <strong className="text-solana-cyan">last 60 days</strong>.
                             This timeframe ensures optimal performance and relevance while managing the substantial volume of Solana blockchain gaming data.

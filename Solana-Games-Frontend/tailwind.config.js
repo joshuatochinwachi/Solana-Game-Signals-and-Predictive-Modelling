@@ -37,7 +37,7 @@ export default {
                 'solana-gradient': 'linear-gradient(135deg, #9945FF 0%, #14F195 100%)',
             },
             animation: {
-                scroll: 'scroll 120s linear infinite',
+                scroll: 'scroll 40s linear infinite',
                 shimmer: 'shimmer 3s infinite',
                 slideIn: 'slideIn 0.5s ease-out',
                 pulse: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',

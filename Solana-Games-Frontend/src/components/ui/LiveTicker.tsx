@@ -75,7 +75,7 @@ export const LiveTicker: React.FC = () => {
                     transition={{
                         repeat: Infinity,
                         ease: "linear",
-                        duration: 30
+                        duration: 15
                     }}
                 >
                     {[...events, ...events, ...events, ...events].map((event, i) => (

@@ -68,7 +68,7 @@ export const LiveAlerts: React.FC = () => {
                 <div
                     key={idx}
                     className={`
-                        p-4 rounded-xl border-l-4 backdrop-blur-md flex items-start gap-4 animate-slideIn
+                        p-4 md:p-6 rounded-xl border-l-4 backdrop-blur-md flex flex-col sm:flex-row items-start gap-4 animate-slideIn
                         ${alert.color}
                     `}
                 >

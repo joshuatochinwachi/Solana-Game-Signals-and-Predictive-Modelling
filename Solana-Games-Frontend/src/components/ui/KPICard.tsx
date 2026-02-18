@@ -62,7 +62,7 @@ export const KPICard: React.FC<KPICardProps> = ({
             </div>
 
             <div>
-                <div className="text-3xl font-bold font-gaming mb-2">{value}</div>
+                <div className="text-2xl md:text-3xl font-bold font-gaming mb-2 truncate">{value}</div>
 
                 {trend !== undefined && (
                     <div className="flex items-center gap-2 text-sm">

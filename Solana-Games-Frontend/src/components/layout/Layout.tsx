@@ -14,7 +14,7 @@ export const Layout: React.FC<LayoutProps> = ({ children }) => {
             <BackgroundAnimation />
             <Header />
             <LiveTicker />
-            <main className="flex-grow container mx-auto px-4 py-8 z-10 relative">
+            <main className="flex-grow container mx-auto px-4 py-8 md:py-12 z-10 relative">
                 {children}
             </main>
             <Footer />
